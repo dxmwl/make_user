@@ -1,0 +1,46 @@
+{
+	"pages": [ //pages数组中第一项表示应用启动页，参考：https://uniapp.dcloud.io/collocation/pages
+		{
+			"path": "uni_modules/uni-cms-article/pages/list/list",
+			"style": {
+				"backgroundColor": "#FFFFFF",
+				"disableScroll": true,
+				"navigationStyle": "custom"
+			}
+		}, {
+			"path": "pages/index/index",
+			"style": {
+				"navigationBarTitleText": "uni-app"
+			}
+		}, {
+			"path": "uni_modules/uni-cms-article/pages/search/search",
+			"style": {
+				"navigationBarTitleText": "搜索"
+			}
+		}, {
+			"path": "uni_modules/uni-cms-article/pages/detail/detail",
+			"style": {
+				"backgroundColor": "#FFFFFF",
+				"navigationBarTitleText": ""
+			}
+		}, {
+			"path": "uni_modules/uni-cms-article/pages/detail/preview",
+			"style": {
+				"backgroundColor": "#FFFFFF",
+				"navigationBarTitleText": ""
+			}
+		}, {
+			"path": "uni_modules/uni-cms-article/pages/webview/webview",
+			"style": {
+				"navigationBarTitleText": ""
+			}
+		}
+	],
+	"globalStyle": {
+		"navigationBarTextStyle": "black",
+		"navigationBarTitleText": "uni-app",
+		"navigationBarBackgroundColor": "#F8F8F8",
+		"backgroundColor": "#F8F8F8"
+	},
+	"uniIdRouter": {}
+}
