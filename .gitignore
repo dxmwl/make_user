@@ -1,0 +1,158 @@
+# 详见 .gitignore 标准配置参考  https://github.com/github/gitignore/blob/main/Node.gitignore
+.DS_Store
+Thumbs.db
+.fusebox/
+.nuxt
+.output
+.out
+dist
+node_modules
+npm-debug.log
+yarn-error.log
+.bun.lockb
+coverage/
+*.local
+
+# 详见 .gitignore 标准配置参考  https://github.com/github/gitignore/blob/main/Node.gitignore
+
+# Editor directories and files
+.project
+.settings
+*.swp
+*.swo
+*~
+.vscode
+.idea
+*.code-workspace
+nbproject/
+
+# uni-app specifics
+.uniapp/
+.uni-app/
+unpackage/
+uniCloud-aliyun/coverage/
+uniCloud-aliyun/.hbuilderx/
+.hbuilderx/
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Dependency directories (Unmanaged)
+node_modules/
+jspm_packages/
+
+# Coverage directory used by tools like istanbul
+coverage/
+lib-cov/
+
+# Production builds
+/dist
+/build
+
+# Environment
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# IDE
+.DS_Store
+.atom/
+.sublime/
+.svn/
+.c9/
+
+# OS generated files
+ehthumbs.db
+Icon?
+!Icon
+.ipynb_checkpoints
+profile.ps1
+*.swp
+*.swo
+*~
+
+# Nuxt.js generated files
+.nuxt
+.dist
+
+# Next.js generated files
+.next
+out/
+
+# Docusaurus generated files
+.docusaurus
+
+# Serverless generated files
+.serverless/
+
+# FuseBox generated files
+.fusebox/
+
+# Parcel cache (https://github.com/parcel-bundler/parcel)
+.cache
+.parcel-cache
+
+# Vue.js generated files
+.vuepress/dist
+.vuepress/.cache
+
+# Platform-specific files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Icon?
+.directory
+.CFUserTextEncoding
+.zcompdump
+.Spotlight-V100
+.Trashes
+.fseventsd
+*.nib
+*.car
+*.pbxuser
+*.perspectivev3
+*.xcworkspacedata
+*.xcuserdata
+*.xccheckout
+*.moved-aside
+*.mode1v3
+*.mode2v3
+*.perspective
+*.ideplugin
+*.xcarchive
+*.dSYM
+*.lproj/
+!*.app.lproj/
+
+# Local configuration files
+*.local
+config.local.*
+
+# Secrets - NEVER commit these!
+*.env.local
+*.env.*.local
+
+# Build outputs
+*.min.js
+*.prod.js
+
+# Testing
+testem.log
+testem.yml
+*.tgz
+
+# Temporary files
+*.tmp
+*.temp
+
+# Legacy build system temp folder
+unpackage/
+
+# Source Maps
+*.map
