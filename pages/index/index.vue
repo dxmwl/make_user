@@ -238,6 +238,30 @@
 					db.collection(userDBName).field('_id,nickname').getTemp() // 用户集合
 				]
 			},
+			
+			// 连表查询，返回两个集合的查询结果
+			colList() {
+			// 根据选中的分类构建查询条件
+			let whereCondition = this.where;
+			if (this.activeCategory !== 'all') {
+				whereCondition += ` && category_id == '${this.activeCategory}'`;
+			}
+			
+			return [
+				db.collection(articleDBName).where(whereCondition).field('thumbnail,title,publish_date,user_id,category_id').getTemp(), // 文章集合
+				db.collection(userDBName).field('_id,nickname').getTemp() // 用户集合
+			]
+		},
+		},
+		onLoad() {
+			// 加载分类列表
+			this.loadCategories();
+			// 初始化热门文章
+			// this.loadPopularPosts();
+			// 加载文章列表
+			this.loadArticles();
+		},
+		methods: {
 			// 加载文章列表
 			async loadArticles() {
 				try {
@@ -250,9 +274,9 @@
 							pageSize: this.pageSize
 						}
 					});
-							
+									
 					console.log('文章列表数据:', result);
-							
+									
 					if(result && result.result && result.result.code === 0) {
 						const newArticles = result.result.data;
 						if(this.currentPage === 1) {
@@ -293,29 +317,6 @@
 					this.loading = false;
 				}
 			},
-			// 连表查询，返回两个集合的查询结果
-			colList() {
-			// 根据选中的分类构建查询条件
-			let whereCondition = this.where;
-			if (this.activeCategory !== 'all') {
-				whereCondition += ` && category_id == '${this.activeCategory}'`;
-			}
-			
-			return [
-				db.collection(articleDBName).where(whereCondition).field('thumbnail,title,publish_date,user_id,category_id').getTemp(), // 文章集合
-				db.collection(userDBName).field('_id,nickname').getTemp() // 用户集合
-			]
-		},
-		},
-		onLoad() {
-			// 加载分类列表
-			this.loadCategories();
-			// 初始化热门文章
-			// this.loadPopularPosts();
-			// 加载文章列表
-			this.loadArticles();
-		},
-		methods: {
 			// 加载分类列表
 			async loadCategories() {
 				try {
@@ -586,19 +587,26 @@
 		display: flex;
 		justify-content: space-between;
 		flex-direction: column;
-		flex: 1;
+		width: 100%;
+		padding: 20rpx;
+		background: #fff;
+		margin-bottom: 20rpx;
+		border-radius: 12rpx;
+		box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
 	}
-	
+
 	.list-item .main {
 		display: flex;
 		justify-content: space-between;
 		flex-direction: column;
-		flex: 1;
+		width: 100%;
 	}
-	
+
 	.list-item .main .title {
 		font-size: 30rpx;
 		color: #333333;
+		width: 100%;
+		word-break: break-word;
 	}
 	
 	.list-item .main .info {
@@ -620,21 +628,14 @@
 	.list-item.right-small-cover .main {
 		flex-direction: row;
 		align-items: center;
+		width: 100%;
 	}
-	
+
 	.list-item.right-small-cover .main .left {
 		flex: 1;
+		width: calc(100% - 260rpx); /* 为图片预留空间 */
 	}
-	
-	.list-item.right-small-cover .main .title {
-		font-size: 30rpx;
-		color: #333333;
-	}
-	
-	.list-item.right-small-cover .main .info {
-		margin-top: 10rpx;
-	}
-	
+
 	.thumbnail {
 		width: 240rpx;
 		height: 160rpx;
@@ -648,17 +649,19 @@
 		display: flex;
 		align-items: center;
 		flex-direction: row;
+		width: 100%;
+		justify-content: space-between;
 	}
-	
+
 	.thumbnails .img {
 		flex: 1;
 		/* #ifndef APP-NVUE */
 		width: auto;
 		/* #endif */
 		height: 200rpx;
-		max-width: 20%; /* 设置最大宽度，防止图片占满整个容器 */
+		max-width: 31%; /* 设置最大宽度，允许一定弹性 */
 		border-radius: 8rpx;
-		margin: 0 10rpx;
+		margin: 0 5rpx; /* 减少间距，为图片留出更多空间 */
 		object-fit: cover;
 	}
 	

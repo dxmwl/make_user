@@ -1,0 +1,31 @@
+# robots.txt for 码客——程序员交流社区
+
+User-agent: *
+Disallow: /admin/
+Disallow: /uniCloud-aliyun/
+Disallow: /node_modules/
+Disallow: /.git/
+
+# 允许访问的主要页面
+Allow: /
+
+# Sitemap
+Sitemap: https://mk.dxmwl.com/sitemap.xml
+
+# 禁止抓取特定类型的文件
+Disallow: /*.log$
+Disallow: /*.tmp$
+Disallow: /*.bak$
+
+# 针对特定爬虫的规则
+User-agent: Googlebot
+Allow: /
+
+User-agent: Baiduspider
+Crawl-delay: 5
+
+User-agent: Sogou web spider
+Crawl-delay: 5
+
+User-agent: YandexBot
+Crawl-delay: 5
