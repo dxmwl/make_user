@@ -38,90 +38,58 @@
 			<view class="container">
 				<!-- 博客文章列表 -->
 				<view class="blog-posts">
-					<uni-list>
-						<template v-for="item in articles" :key="item._id">
-							<!-- 无封面文章 -->
-							<uni-list-item 
-								v-if="!item.thumbnail || item.thumbnail.length === 0" 
-								:to="'/uni_modules/uni-cms-article/pages/detail/detail?id=' + item._id"
-								class="list-item not-cover"
-								direction="column"
-							>
-								<template v-slot:body>
-									<view class="main">
-										<view>
-											<text class="title">{{ item.title }}</text>
-										</view>
-										<view class="info">
-											<text class="author">{{ item.user_info ? item.user_info.nickname : (item.user_id && item.user_id[0] ? item.user_id[0].nickname : '') }}</text>
-											<text class="publish_date">{{ publishTime(item.publish_date) }}</text>
-										</view>
-									</view>
-								</template>
-							</uni-list-item>
-							
-							<!-- 右侧小封面文章 -->
-							<uni-list-item 
-								v-else-if="item.thumbnail && item.thumbnail.length === 1"
-								:to="'/uni_modules/uni-cms-article/pages/detail/detail?id=' + item._id"
-								class="list-item right-small-cover"
-							>
-								<template v-slot:body>
-									<view class="main">
-										<view class="left">
-											<text class="title">{{ item.title }}</text>
-											<view class="info">
-												<text class="author">{{ item.user_info ? item.user_info.nickname : (item.user_id && item.user_id[0] ? item.user_id[0].nickname : '') }}</text>
-												<text class="publish_date">{{ publishTime(item.publish_date) }}</text>
-											</view>
-										</view>
-										<image class="thumbnail" :src="item.thumbnail[0]" mode="aspectFill"></image>
-									</view>
-								</template>
-							</uni-list-item>
-							
-							<!-- 三封面文章 -->
-							<uni-list-item 
-								v-else-if="item.thumbnail && item.thumbnail.length >= 3"
-								:to="'/uni_modules/uni-cms-article/pages/detail/detail?id=' + item._id"
-								class="list-item three-cover"
-								direction="column"
-							>
-								<template v-slot:body>
-									<view class="main">
-										<text class="title">{{ item.title }}</text>
-										<view class="thumbnails">
-											<image class="img" v-for="(img, index) in item.thumbnail.slice(0, 3)" :key="index" :src="img" mode="aspectFill"></image>
-										</view>
-										<view class="info">
-											<text class="author">{{ item.user_info ? item.user_info.nickname : (item.user_id && item.user_id[0] ? item.user_id[0].nickname : '') }}</text>
-											<text class="publish_date">{{ publishTime(item.publish_date) }}</text>
-										</view>
-									</view>
-								</template>
-							</uni-list-item>
-						</template>
-					</uni-list>
-					<uni-load-more :status="loading ? 'loading' : (hasMore ? 'more' : 'noMore')" @clickLoadMore="loadMoreArticles"></uni-load-more>
+					<!-- 使用 uni-cms-article 提供的标准列表组件 -->
+					<unicloud-db ref='udb' v-slot:default="{ data, pagination, hasMore, loading, error, options }" @error="onqueryerror"
+						:collection="colList" :page-size="10" orderby="publish_date desc" @load="listLoad">
+						<!-- #ifndef APP-NVUE -->
+						<scroll-view
+							scroll-y
+							class="uni-list"
+							refresher-enabled
+							@refresherrefresh="refresh"
+							@scrolltolower="loadMore"
+						>
+							<template v-for="item in data">
+								<not-cover v-if="item.thumbnail && item.thumbnail.length === 0" :data="item" @click="goToArticleDetail(item._id)"></not-cover>
+								<right-small-cover v-else-if="item.thumbnail && item.thumbnail.length === 1"
+									:data="item" @click="goToArticleDetail(item._id)"></right-small-cover>
+								<three-cover v-else-if="item.thumbnail && item.thumbnail.length >= 3"
+									:data="item" @click="goToArticleDetail(item._id)"></three-cover>
+							</template>
+							<!-- 加载状态 -->
+							<uni-load-state @networkResume="refresh"
+								:state="{ data: data, pagination, hasMore, loading, error }"
+								@clickLoadMore="loadMore">
+							</uni-load-state>
+						</scroll-view>
+						<!-- #endif -->
+						<!-- #ifdef APP-NVUE -->
+						<list class="uni-list" :border="false">
+							<refresh-box :loading="loading" @refresh="refresh"></refresh-box>
+							<template v-for="item in data">
+								<not-cover v-if="item.thumbnail && item.thumbnail.length === 0" :data="item" @click="goToArticleDetail(item._id)"></not-cover>
+								<right-small-cover v-else-if="item.thumbnail && item.thumbnail.length === 1"
+									:data="item" @click="goToArticleDetail(item._id)"></right-small-cover>
+								<three-cover v-else-if="item.thumbnail && item.thumbnail.length >= 3"
+									:data="item" @click="goToArticleDetail(item._id)"></three-cover>
+							</template>
+							<uni-load-state @networkResume="refresh"
+								:state="{ data: data, pagination, hasMore, loading, error }"
+								@clickLoadMore="loadMore">
+							</uni-load-state>
+						</list>
+						<!-- #endif -->
+					</unicloud-db>
 				</view>
 				
 				<!-- 侧边栏 -->
 				<view class="sidebar">
-					<!-- 关于我 -->
-					<view class="widget">
-						<h3 class="widget-title">关于我</h3>
-						<view class="about-me">
-							<image class="avatar" src="/static/logo.png" mode="aspectFit"></image>
-							<text class="bio">欢迎来到码客社区，这里是程序员交流学习的平台。</text>
-						</view>
-					</view>
-					
 					<!-- 热门文章 -->
 					<view class="widget">
 						<h3 class="widget-title">热门文章</h3>
 						<view class="popular-post" v-for="(popular, index) in popularPosts" :key="index">
-							<text class="popular-title" @click="readMore(popular.id)">{{ popular.title }}</text>
-							<text class="popular-date">{{ popular.date }}</text>
+							<text class="popular-title" @click="readMore(popular._id)">{{ popular.title }}</text>
+							<text class="popular-date">{{ publishTime(popular.publish_date) }}</text>
 						</view>
 					</view>
 					
@@ -129,7 +97,7 @@
 					<view class="widget">
 						<h3 class="widget-title">分类</h3>
 						<view class="categories">
-							<text class="category" v-for="(cat, index) in categories" :key="index" @click="filterByCategory(cat.name)">
+							<text class="category" v-for="(cat, index) in categoriesList.filter(c => c._id !== 'all')" :key="cat._id" @click="filterByCategory(cat._id)">
 								{{ cat.name }} ({{ cat.count }})
 							</text>
 						</view>
@@ -172,40 +140,37 @@
 <script>
 	import translatePublishTime from '@/uni_modules/uni-cms-article/common/publish-time';
 	
+	// 引入 uni-cms-article 组件
+	import notCover from '@/uni_modules/uni-cms-article/components/list-template/not-cover.vue';
+	import rightSmallCover from '@/uni_modules/uni-cms-article/components/list-template/right-small-cover.vue';
+	import threeCover from '@/uni_modules/uni-cms-article/components/list-template/three-cover.vue';
+	import refreshBox from '@/uni_modules/uni-cms-article/components/refresh-box/refreshBox.nvue';
+	
 	const db = uniCloud.database();
 	const articleDBName = 'uni-cms-articles'
 	const categoryDBName = 'uni-cms-categories'
 	const userDBName = 'uni-id-users'
 	
 	export default {
-		
+		components: {
+			notCover,
+			rightSmallCover,
+			threeCover,
+			refreshBox
+		},
 		data() {
 			return {
 				where: '"article_status" == 1', // 查询条件
 				activeCategory: 'all', // 当前选中的分类ID
-				categoriesList: [{ _id: 'all', name: '全部' }], // 分类列表，默认包含"全部"
-				popularPosts: [{
-					id: 1,
-					title: 'Vue 3与React：前端框架对比分析',
-					date: '2026-01-10'
-				}, {
-					id: 2,
-					title: 'Node.js性能优化实战指南',
-					date: '2026-01-08'
-				}, {
-					id: 4,
-					title: '微前端架构设计与实践',
-					date: '2026-01-03'
-				}, {
-					id: 3,
-					title: 'TypeScript高级特性详解',
-					date: '2026-01-05'
-				}],
+				categoriesList: [], // 分类列表，从云函数获取
+				popularPosts: [], // 热门文章列表，通过云函数动态加载
 				articles: [], // 文章列表
+				listData: [], // 用于存储 unicloud-db 加载的数据
 				currentPage: 1,
 				pageSize: 10,
 				hasMore: true,
 				loading: false,
+				loadType: null,
 				categories: [{
 					name: '前端开发',
 					count: 12
@@ -240,25 +205,13 @@
 				]
 			},
 			
-			// 连表查询，返回两个集合的查询结果
-			colList() {
-			// 根据选中的分类构建查询条件
-			let whereCondition = this.where;
-			if (this.activeCategory !== 'all') {
-				whereCondition += ` && category_id == '${this.activeCategory}'`;
-			}
-			
-			return [
-				db.collection(articleDBName).where(whereCondition).field('thumbnail,title,publish_date,user_id,category_id').getTemp(), // 文章集合
-				db.collection(userDBName).field('_id,nickname').getTemp() // 用户集合
-			]
-		},
+
 		},
 		onLoad() {
+			// 初始化热门文章
+			this.loadPopularPosts();
 			// 加载分类列表
 			this.loadCategories();
-			// 初始化热门文章
-			// this.loadPopularPosts();
 			// 加载文章列表
 			this.loadArticles();
 		},
@@ -275,9 +228,9 @@
 							pageSize: this.pageSize
 						}
 					});
-									
+															
 					console.log('文章列表数据:', result);
-									
+															
 					if(result && result.result && result.result.code === 0) {
 						const newArticles = result.result.data;
 						if(this.currentPage === 1) {
@@ -287,7 +240,7 @@
 							// 加载更多，追加数据
 							this.articles = this.articles.concat(newArticles);
 						}
-								
+															
 						// 检查是否还有更多数据
 						this.hasMore = newArticles.length === this.pageSize;
 					} else {
@@ -327,31 +280,69 @@
 					});
 					console.log('分类数据:', result);
 					
-					// 创建一个新的数组，包含"全部"和从云函数获取的所有分类
-					const newCategoriesList = [{ _id: 'all', name: '全部' }];
-					
-					if(result && result.result && result.result.data && result.result.data.length > 0) {
+					// 从云函数获取分类数据
+					let fetchedCategories = [];
+											
+					if(result && result.result && result.result.code === 0 && result.result.data && result.result.data.length > 0) {
 						console.log('数据库分类数据:', result.result.data);
-						// 将分类数据添加到列表中
-						result.result.data.forEach(category => {
-							newCategoriesList.push(category);
-					});
+						// 使用从云函数获取的分类数据
+						fetchedCategories = result.result.data;
 					} else {
 						console.log('未找到分类数据');
 					}
-					
-					// 更新分类列表
-					this.categoriesList = newCategoriesList;
+											
+					// 添加"全部"分类到列表开头
+					const allCategory = { _id: 'all', name: '全部' };
+					this.categoriesList = [allCategory, ...fetchedCategories];
 					console.log('最终分类列表:', this.categoriesList);
 				} catch (e) {
 					console.error('加载分类列表失败', e);
-					// 如果加载失败，仍然保留默认的"全部"分类，同时提供一些默认分类作为后备
-					this.categoriesList = [{ _id: 'all', name: '全部' }, { _id: 'frontend', name: '前端开发' }, { _id: 'backend', name: '后端开发' }, { _id: 'mobile', name: '移动端' }];
+					// 如果加载失败，提供"全部"分类和一些默认分类作为后备
+					const allCategory = { _id: 'all', name: '全部' };
+					const defaultCategories = [{ _id: 'frontend', name: '前端开发' }, { _id: 'backend', name: '后端开发' }, { _id: 'mobile', name: '移动端' }];
+					this.categoriesList = [allCategory, ...defaultCategories];
 				}
 			},
-					
+			// 加载热门文章
+			async loadPopularPosts() {
+				try {
+					const result = await uniCloud.callFunction({
+						name: 'get-hot-articles'
+					});
+									
+					console.log('热门文章数据:', result);
+									
+					if(result && result.result && result.result.code === 0) {
+						this.popularPosts = result.result.data;
+					} else {
+						console.error('获取热门文章失败:', result.result ? result.result.msg : '未知错误');
+					}
+				} catch (error) {
+					console.error('加载热门文章出错:', error);
+					// 如果云函数调用失败，使用静态数据作为后备
+					console.warn('使用静态数据作为后备');
+					this.popularPosts = [{
+						_id: '1',
+						title: 'Vue 3 新特性解析',
+						publish_date: new Date().getTime(),
+						view_count: 1250
+					}, {
+						_id: '2',
+						title: 'React Hooks 最佳实践',
+						publish_date: new Date().getTime(),
+						view_count: 980
+					}];
+				}
+			},
 			// 切换分类
 			changeCategory(categoryId) {
+				this.activeCategory = categoryId;
+				this.currentPage = 1; // 重置到第一页
+				this.articles = []; // 清空当前文章列表
+				this.loadArticles(); // 重新加载文章
+			},
+			// 切换分类（包括全部分类）
+			changeCategoryWithAll(categoryId) {
 				this.activeCategory = categoryId;
 				this.currentPage = 1; // 重置到第一页
 				this.articles = []; // 清空当前文章列表
@@ -374,9 +365,16 @@
 					url: `/uni_modules/uni-cms-article/pages/detail/detail?id=${postId}`
 				});
 			},
-			filterByCategory(category) {
-				console.log(`筛选分类: ${category}`);
-				// 实现分类筛选逻辑
+			filterByCategory(categoryId) {
+				// 切换到对应的分类
+				this.changeCategory(categoryId);
+			},
+			// 切换分类
+			changeCategory(categoryId) {
+				this.activeCategory = categoryId;
+				this.currentPage = 1; // 重置到第一页
+				// 重新加载文章列表
+				this.loadArticles();
 			},
 			filterByTag(tag) {
 				console.log(`筛选标签: ${tag}`);
@@ -418,6 +416,48 @@
 					// 兼容uni-app的API
 					plus.runtime.openWeb(url);
 				}
+			},
+			// 处理 unicloud-db 数据加载
+			async listLoad(data) {
+				const listData = data.map(item => {
+					if (typeof item.thumbnail === 'string') {
+						item.thumbnail = [item.thumbnail]
+					}
+					return item
+				})
+				
+				this.listData = this.loadType === 'loadMore' ? this.articles.concat(listData) : listData
+				this.loadType = null
+			},
+			// 刷新数据
+			refresh() {
+				this.loadType = 'refresh'
+				this.$refs.udb.loadData({
+					clear: true
+				}, () => {
+					uni.stopPullDownRefresh()
+				})
+			},
+			// 加载更多
+			loadMore() {
+				this.loadType = 'loadMore'
+				this.$refs.udb.loadMore()
+			},
+			// 查询出错
+			onqueryerror(e) {
+				console.error(e);
+			},
+			// 跳转到文章详情
+			goToArticleDetail(id) {
+				uni.navigateTo({
+					url: `/uni_modules/uni-cms-article/pages/detail/detail?id=${id}`
+				});
+			},
+			// 跳转到文章详情页
+			readMore(postId) {
+				uni.navigateTo({
+					url: `/uni_modules/uni-cms-article/pages/detail/detail?id=${postId}`
+				});
 			}
 		}
 	}
@@ -577,6 +617,7 @@
 	.blog-posts {
 		flex: 3; /* 保持3:1的比例 */
 		min-width: 0; /* 防止flex item溢出 */
+		width: 100%;
 	}
 	
 	.sidebar {
@@ -585,88 +626,28 @@
 		flex-shrink: 0;
 	}
 	
-	/* 文章列表样式 */
-	.list-item {
-		display: flex;
-		justify-content: space-between;
-		flex-direction: column;
+	/* 文章列表样式 - 这些样式将不再影响，因为使用了 uni-cms-article 的标准组件 */
+	/* 为 uni-cms-article 组件添加样式 */
+	.uni-list {
 		width: 100%;
-		margin-bottom: 20rpx;
+		padding: 0;
+		margin: 0;
 	}
 
-	.list-item .main {
-		display: flex;
-		justify-content: space-between;
-		flex-direction: column;
+	/* 确保列表项不居中 */
+	.uni-list-item {
+		text-align: left !important;
+		justify-content: flex-start !important;
 		width: 100%;
 	}
 
-	.list-item .main .title {
-		font-size: 30rpx;
-		color: #333333;
+	.uni-list-item__container {
+		text-align: left !important;
+		justify-content: flex-start !important;
 		width: 100%;
-		word-break: break-word;
-	}
-	
-	.list-item .main .info {
-		display: flex;
-		flex-direction: row;
-		margin-top: 20rpx;
-	}
-	
-	.list-item .main .author,
-	.list-item .main .publish_date {
-		font-size: 24rpx;
-		color: #bbbbbb;
-	}
-	
-	.list-item .main .publish_date {
-		margin-left: 14rpx;
-	}
-	
-	.list-item.right-small-cover .main {
-		flex-direction: row;
-		align-items: center;
 	}
 
-	.list-item.right-small-cover .main .left {
-		flex: 1;
-	}
 
-	.thumbnail {
-		width: 240rpx;
-		height: 160rpx;
-		margin-left: 20rpx;
-		border-radius: 8rpx;
-		object-fit: cover;
-	}
-	
-	.thumbnails {
-		margin: 20rpx 0;
-		display: flex;
-		align-items: center;
-		flex-direction: row;
-	}
-
-	.thumbnails .img {
-		flex: 1;
-		/* #ifndef APP-NVUE */
-		width: auto;
-		/* #endif */
-		height: 200rpx;
-		max-width: 31%; /* 设置最大宽度，允许一定弹性 */
-		border-radius: 8rpx;
-		margin: 0 5rpx; /* 减少间距，为图片留出更多空间 */
-		object-fit: cover;
-	}
-	
-	.thumbnails .img:first-child {
-		margin-left: 0;
-	}
-	
-	.thumbnails .img:last-child {
-		margin-right: 0;
-	}
 	
 	.widget {
 		background: #fff;
