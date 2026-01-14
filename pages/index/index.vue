@@ -458,14 +458,14 @@
 	}
 	
 	.logo {
-		width: 60rpx;
-		height: 60rpx;
+		width: 100rpx;
+		height: 100rpx;
 		margin-right: 20rpx;
 		border-radius: 50%;
 	}
 	
 	.site-name {
-		font-size: 36rpx;
+		font-size: 40rpx;
 		font-weight: bold;
 		color: #2c3e50;
 	}
