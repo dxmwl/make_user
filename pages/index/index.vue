@@ -7,10 +7,11 @@
 					<image class="logo" src="/static/logo.png" mode="aspectFit"></image>
 					<text class="site-name">码客——程序员交流社区</text>
 				</view>
-				<view class="search-section">
-					<text class="search-link" @click="goToSearchPage">搜索文章...</text>
-				</view>
 				<view class="nav-section">
+					<button class="search-button" @click="goToSearchPage">
+						<text class="search-icon">🔍</text>
+						<text class="search-text">搜索文章</text>
+					</button>
 					<text class="nav-item active">首页</text>
 					<text class="nav-item">论坛</text>
 					<text class="nav-item">问答</text>
@@ -436,16 +437,18 @@
 		position: sticky;
 		top: 0;
 		z-index: 1000;
+		padding: 15rpx 0; /* 添加上下padding使导航栏更舒适 */
 	}
 	
 	.header-content {
 		width: 80%; /* 改为80%宽度 */
 		max-width: none; /* 移除最大宽度限制 */
 		margin: 0 auto;
-		padding: 20rpx 40rpx;
+		padding: 10rpx 40rpx;
 		display: flex;
-		justify-content: space-between;
+		justify-content: flex-start; /* 改为左对齐，增加空间感 */
 		align-items: center;
+		gap: 40rpx; /* 在各元素间添加间距 */
 	}
 	
 	.logo-section {
@@ -499,8 +502,8 @@
 	
 	.nav-section {
 		display: flex;
+		align-items: center;
 		flex: 1;
-		justify-content: flex-end;
 		gap: 40rpx;
 	}
 	
@@ -565,8 +568,8 @@
 	}
 	
 	.container {
-		width: 80%; /* 改为80%宽度 */
-		margin: 0 auto;
+		width: 80%; /* 设置为80%宽度 */
+		margin: 0 auto; /* 居中显示 */
 		display: flex;
 		gap: 30rpx;
 	}
@@ -588,11 +591,7 @@
 		justify-content: space-between;
 		flex-direction: column;
 		width: 100%;
-		padding: 20rpx;
-		background: #fff;
 		margin-bottom: 20rpx;
-		border-radius: 12rpx;
-		box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
 	}
 
 	.list-item .main {
@@ -628,12 +627,10 @@
 	.list-item.right-small-cover .main {
 		flex-direction: row;
 		align-items: center;
-		width: 100%;
 	}
 
 	.list-item.right-small-cover .main .left {
 		flex: 1;
-		width: calc(100% - 260rpx); /* 为图片预留空间 */
 	}
 
 	.thumbnail {
@@ -649,8 +646,6 @@
 		display: flex;
 		align-items: center;
 		flex-direction: row;
-		width: 100%;
-		justify-content: space-between;
 	}
 
 	.thumbnails .img {
@@ -825,6 +820,41 @@
 		color: #95a5a6;
 	}
 	
+	/* 搜索按钮样式 */
+	.search-button {
+		background: #f8f9fa;
+		border: 2rpx solid #dee2e6;
+		border-radius: 30rpx;
+		padding: 12rpx 24rpx;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		cursor: pointer;
+		transition: all 0.3s ease;
+		margin-right: 20rpx; /* 给导航项之间留些间距 */
+	}
+	
+	.search-button:hover {
+		background: #e9ecef;
+		border-color: #adb5bd;
+		transform: translateY(-2rpx);
+	}
+	
+	.search-icon {
+		margin-right: 10rpx;
+		font-size: 24rpx;
+	}
+	
+	.search-text {
+		font-size: 26rpx;
+		color: #495057;
+	}
+	
+	.nav-section {
+		display: flex;
+		align-items: center;
+	}
+	
 	.friend-links {
 		width: 80%;
 		margin: 10rpx auto 0;
@@ -872,6 +902,7 @@
 			flex: none;
 			width: 100%;
 			max-width: 600rpx;
+			margin-left: 0;
 		}
 		
 		.search-input {
