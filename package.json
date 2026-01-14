@@ -1,0 +1,20 @@
+{
+  "name": "make_user",
+  "displayName": "码客——程序员交流社区-用户端",
+  "version": "1.0.0",
+  "description": "码客——程序员交流社区的用户端，提供文章浏览、搜索、分类查看等功能",
+  "keywords": [
+    "码客",
+    "程序员交流",
+    "文章社区",
+    "内容管理"
+  ],
+  "uni_modules": {
+    "encrypt": [
+      "uni_modules/uni-cms-article/uniCloud/cloudfunctions/quill-delta-converter/index.js",
+      "uni_modules/uni-cms-article/uniCloud/cloudfunctions/uni-cms-unlock-callback/index.js",
+      "uni_modules/uni-config-center/uniCloud/cloudfunctions/uni-config-center/index.js",
+      "uni_modules/uni-id-common/uniCloud/cloudfunctions/uni-id-common/index.js"
+    ]
+  }
+}
