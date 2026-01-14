@@ -125,6 +125,24 @@ export default {
 	color: #333;
 }
 
+/* 桌面端样式调整 */
+@media screen and (min-width: 768px) {
+  .content {
+    max-width: 60%;
+    margin: 40rpx auto 80rpx;
+    padding: 0 50rpx;
+  }
+}
+
+/* 移动端样式保持原有特性 */
+@media screen and (max-width: 767px) {
+  .content {
+    width: 100%;
+    margin: 40rpx 0 80rpx 0;
+    padding: 0 30rpx;
+  }
+}
+
 .divider {
 	height: 1px;
 	background: #d8d8d8;

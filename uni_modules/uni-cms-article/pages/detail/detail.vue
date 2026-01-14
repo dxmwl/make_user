@@ -1,34 +1,35 @@
 <template>
-  <unicloud-db v-slot:default="{data, loading, error, options}" :collection="collection" :options="formData"
-               :getone="true" :where="where" :manual="true" ref="detail" foreignKey="uni-cms-articles.user_id"
-               @load="loadData"
-               class="article">
-    <template v-if="!loading && data">
-      <view class="meta">
-        <view class="title">
-          <text class="text">{{ data.title }}</text>
+  <view class="article">
+    <unicloud-db v-slot:default="{data, loading, error, options}" :collection="collection" :options="formData"
+                 :getone="true" :where="where" :manual="true" ref="detail" foreignKey="uni-cms-articles.user_id"
+                 @load="loadData">
+      <template v-if="!loading && data">
+        <view class="meta">
+          <view class="title">
+            <text class="text">{{ data.title }}</text>
+          </view>
+          <view class="excerpt">
+            <text class="text">{{ data.excerpt }}</text>
+          </view>
+          <view class="author">
+            <template v-if="data.user_id[0]">
+              <text class="at">{{ data.user_id[0].nickname || '' }}</text>
+              <text class="split">·</text>
+            </template>
+            <text class="date">{{ publishTime(data.publish_date) }}</text>
+          </view>
         </view>
-        <view class="excerpt">
-          <text class="text">{{ data.excerpt }}</text>
-        </view>
-        <view class="author">
-          <template v-if="data.user_id[0]">
-            <text class="at">{{ data.user_id[0].nickname || '' }}</text>
-            <text class="split">·</text>
-          </template>
-          <text class="date">{{ publishTime(data.publish_date) }}</text>
-        </view>
+        <render-article-detail
+          :content="data.content"
+          :content-images="data.content_images"
+          :ad-config="{ adpId, watchAdUniqueType }"
+        ></render-article-detail>
+      </template>
+      <view class="detail-loading" v-else>
+        <uni-icons type="spinner-cycle" size="35px"/>
       </view>
-      <render-article-detail
-        :content="data.content"
-        :content-images="data.content_images"
-        :ad-config="{ adpId, watchAdUniqueType }"
-      ></render-article-detail>
-    </template>
-    <view class="detail-loading" v-else>
-      <uni-icons type="spinner-cycle" size="35px"/>
-    </view>
-  </unicloud-db>
+    </unicloud-db>
+  </view>
 </template>
 
 <script>
@@ -151,6 +152,26 @@ export default {
 
 @mixin cp {
   padding: 0 30rpx;
+}
+
+/* 桌面端样式调整 */
+@media screen and (min-width: 768px) {
+  .article {
+    max-width: 60%;
+    margin: 0 auto;
+  }
+  
+  .meta {
+    padding: 0 50rpx !important; /* 增加桌面端的左右内边距 */
+  }
+}
+
+/* 移动端样式保持原有特性 */
+@media screen and (max-width: 767px) {
+  .article {
+    width: 100%;
+    margin: 0;
+  }
 }
 
 .detail-loading {

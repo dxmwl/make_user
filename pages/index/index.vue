@@ -13,9 +13,7 @@
 						<text class="search-text">搜索文章</text>
 					</button>
 					<text class="nav-item active">首页</text>
-					<text class="nav-item">论坛</text>
-					<text class="nav-item">问答</text>
-					<text class="nav-item">关于</text>
+					<text class="nav-item" @click="goToAboutPage">关于</text>
 				</view>
 			</view>
 		</view>
@@ -187,7 +185,7 @@
 					name: 'DevOps',
 					count: 4
 				}],
-				tags: ['JavaScript', 'Vue', 'React', 'Node.js', 'CSS', 'HTML', 'TypeScript', 'Angular', 'Flutter', 'Docker']
+				tags: [] // 标签云数据，通过云函数动态加载
 			}
 		},
 		computed: {
@@ -212,6 +210,8 @@
 			this.loadPopularPosts();
 			// 加载分类列表
 			this.loadCategories();
+			// 加载标签云
+			this.loadRandomTags();
 			// 加载文章列表
 			this.loadArticles();
 		},
@@ -380,9 +380,35 @@
 				console.log(`筛选标签: ${tag}`);
 				// 实现标签筛选逻辑
 			},
+			// 加载随机标签
+			async loadRandomTags() {
+				try {
+					const result = await uniCloud.callFunction({
+						name: 'get-random-tags'
+					});
+					
+					console.log('随机标签数据:', result);
+					
+					if(result && result.result && result.result.code === 0) {
+						this.tags = result.result.data;
+					} else {
+						console.error('获取随机标签失败:', result.result ? result.result.msg : '未知错误');
+					}
+				} catch (error) {
+					console.error('加载随机标签出错:', error);
+					// 如果云函数调用失败，使用静态数据作为后备
+					console.warn('使用静态数据作为后备');
+					this.tags = ['JavaScript', 'Vue', 'React', 'Node.js', 'CSS', 'HTML', 'TypeScript', 'Angular', 'Flutter', 'Docker'];
+				}
+			},
 			goToSearchPage() {
 				uni.navigateTo({
 					url: '/uni_modules/uni-cms-article/pages/search/search'
+				});
+			},
+			goToAboutPage() {
+				uni.navigateTo({
+					url: '/pages/about/about'
 				});
 			},
 			onSearchInput(e) {

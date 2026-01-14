@@ -15,13 +15,13 @@
 		},  {
 			"path": "uni_modules/uni-cms-article/pages/search/search",
 			"style": {
-				"navigationBarTitleText": "搜索"
+				"navigationStyle": "custom"
 			}
 		}, {
 			"path": "uni_modules/uni-cms-article/pages/detail/detail",
 			"style": {
 				"backgroundColor": "#FFFFFF",
-				"navigationBarTitleText": ""
+					"navigationStyle": "custom"
 			}
 		}, {
 			"path": "uni_modules/uni-cms-article/pages/detail/preview",
@@ -33,6 +33,11 @@
 			"path": "uni_modules/uni-cms-article/pages/webview/webview",
 			"style": {
 				"navigationBarTitleText": ""
+			}
+		}, {
+			"path": "pages/about/about",
+			"style": {
+				"navigationStyle": "custom"
 			}
 		}
 	],
