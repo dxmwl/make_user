@@ -48,11 +48,11 @@
 							@scrolltolower="loadMore"
 						>
 							<template v-for="item in data">
-								<not-cover v-if="item.thumbnail && item.thumbnail.length === 0" :data="item" @click="goToArticleDetail(item._id)"></not-cover>
+								<not-cover v-if="item.thumbnail && item.thumbnail.length === 0" :data="item" ></not-cover>
 								<right-small-cover v-else-if="item.thumbnail && item.thumbnail.length === 1"
-									:data="item" @click="goToArticleDetail(item._id)"></right-small-cover>
+									:data="item" ></right-small-cover>
 								<three-cover v-else-if="item.thumbnail && item.thumbnail.length >= 3"
-									:data="item" @click="goToArticleDetail(item._id)"></three-cover>
+									:data="item" ></three-cover>
 							</template>
 							<!-- 加载状态 -->
 							<uni-load-state @networkResume="refresh"
@@ -65,11 +65,11 @@
 						<list class="uni-list" :border="false">
 							<refresh-box :loading="loading" @refresh="refresh"></refresh-box>
 							<template v-for="item in data">
-								<not-cover v-if="item.thumbnail && item.thumbnail.length === 0" :data="item" @click="goToArticleDetail(item._id)"></not-cover>
+								<not-cover v-if="item.thumbnail && item.thumbnail.length === 0" :data="item" ></not-cover>
 								<right-small-cover v-else-if="item.thumbnail && item.thumbnail.length === 1"
-									:data="item" @click="goToArticleDetail(item._id)"></right-small-cover>
+									:data="item" ></right-small-cover>
 								<three-cover v-else-if="item.thumbnail && item.thumbnail.length >= 3"
-									:data="item" @click="goToArticleDetail(item._id)"></three-cover>
+									:data="item" ></three-cover>
 							</template>
 							<uni-load-state @networkResume="refresh"
 								:state="{ data: data, pagination, hasMore, loading, error }"
@@ -86,7 +86,7 @@
 					<view class="widget">
 						<h3 class="widget-title">热门文章</h3>
 						<view class="popular-post" v-for="(popular, index) in popularPosts" :key="index">
-							<text class="popular-title" @click="readMore(popular._id)">{{ popular.title }}</text>
+							<text class="popular-title" @click="goToArticleDetail(popular._id)">{{ popular.title }}</text>
 							<text class="popular-date">{{ publishTime(popular.publish_date) }}</text>
 						</view>
 					</view>

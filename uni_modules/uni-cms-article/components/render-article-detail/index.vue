@@ -123,12 +123,18 @@ export default {
 	padding: 0 30rpx 80rpx;
 	word-break: break-word;
 	color: #333;
+	
+	/* 桌面端内容样式 */
+	@media screen and (min-width: 768px) {
+		font-size: 34rpx;
+		line-height: 1.85;
+		padding: 0 50rpx 80rpx; /* 桌面端增加边距 */
+	}
 }
 
 /* 桌面端样式调整 */
 @media screen and (min-width: 768px) {
   .content {
-    max-width: 60%;
     margin: 40rpx auto 80rpx;
     padding: 0 50rpx;
   }
@@ -139,7 +145,7 @@ export default {
   .content {
     width: 100%;
     margin: 40rpx 0 80rpx 0;
-    padding: 0 30rpx;
+    padding: 0 15px; /* 移动端边距 */
   }
 }
 

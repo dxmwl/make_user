@@ -152,17 +152,23 @@ export default {
 
 @mixin cp {
   padding: 0 30rpx;
+  
+  /* 桌面端样式调整 */
+  @media screen and (min-width: 768px) {
+    padding: 0 50rpx;
+  }
 }
 
 /* 桌面端样式调整 */
 @media screen and (min-width: 768px) {
   .article {
-    max-width: 60%;
+    max-width: 60vw; /* 使用视口宽度的60% */
     margin: 0 auto;
+    padding: 0 30px; /* 确保桌面端边距 */
   }
   
   .meta {
-    padding: 0 50rpx !important; /* 增加桌面端的左右内边距 */
+    padding: 0 50rpx !important; /* 与内容区域保持一致 */
   }
 }
 
@@ -171,6 +177,7 @@ export default {
   .article {
     width: 100%;
     margin: 0;
+    padding: 0 15px; /* 移动端边距 */
   }
 }
 
@@ -198,12 +205,29 @@ export default {
   position: relative;
   z-index: 1;
   padding-top: 20rpx;
+  
+  /* 桌面端样式调整 */
+  @media screen and (min-width: 768px) {
+    padding: 0 50rpx !important; /* 与内容区域保持一致 */
+  }
+  
+  /* 移动端样式调整 */
+  @media screen and (max-width: 767px) {
+    padding: 0 15px !important; /* 移动端边距 */
+  }
+  
   .title {
     .text {
       font-size: 40rpx;
       line-height: 66rpx;
       font-weight: bold;
       color: #333;
+      
+      /* 桌面端标题样式 */
+      @media screen and (min-width: 768px) {
+        font-size: 48rpx;
+        line-height: 74rpx;
+      }
     }
   }
 
@@ -213,6 +237,12 @@ export default {
       font-size: 26rpx;
       line-height: 40rpx;
       color: #999;
+      
+      /* 桌面端摘要样式 */
+      @media screen and (min-width: 768px) {
+        font-size: 28rpx;
+        line-height: 44rpx;
+      }
     }
   }
 
@@ -222,6 +252,11 @@ export default {
     justify-content: flex-start;
     flex-direction: row;
     margin-top: 20rpx;
+    
+    /* 桌面端作者信息样式 */
+    @media screen and (min-width: 768px) {
+      font-size: 28rpx;
+    }
 
     .at,
     .split,
