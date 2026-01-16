@@ -15,6 +15,11 @@
 					<text class="nav-item active">首页</text>
 					<text class="nav-item" @click="goToAboutPage">关于</text>
 					<view class="user-section">
+						<!-- 发布文章按钮，仅在用户登录时显示 -->
+						<view v-if="isLoggedIn" class="publish-btn" @click="goToPublishArticle">
+							<uni-icons type="compose" size="20" color="#fff"></uni-icons>
+							<text class="publish-text">发布</text>
+						</view>
 						<view v-if="isLoggedIn" class="user-profile" @click="toggleUserMenu">
 							<image v-if="userInfo.avatar_file" class="avatar" :src="userInfo.avatar_file.url" mode="aspectFill"></image>
 							<image v-else class="avatar" src="/static/logo.png" mode="aspectFill"></image>
@@ -639,6 +644,14 @@
 				this.userInfo = {};
 				this.showUserMenu = false;
 				// 不需要跳转页面，只需更新状态
+			},
+			// 跳转到发布文章页面
+			goToPublishArticle() {
+				// 检查用户是否具有发布文章的权限
+				// 可以根据用户的角色来判断，例如只有管理员或特定角色才能发布文章
+				uni.navigateTo({
+					url: '/uni_modules/uni-cms/pages/article/add/add'
+				});
 			}
 		}
 	}
@@ -749,6 +762,28 @@
 	.user-section {
 		margin-left: auto; /* 将用户部分推到最右边 */
 		position: relative; /* 为下拉菜单定位 */
+		display: flex;
+		align-items: center;
+	}
+	
+	.publish-btn {
+		display: flex;
+		align-items: center;
+		padding: 8rpx 16rpx;
+		border-radius: 30rpx;
+		background: #3498db;
+		color: white;
+		font-size: 26rpx;
+		cursor: pointer;
+		margin-right: 10rpx;
+	}
+	
+	.publish-btn:hover {
+		background: #2980b9;
+	}
+	
+	.publish-text {
+		margin-left: 5rpx;
 	}
 	
 	.user-profile {

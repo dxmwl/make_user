@@ -55,6 +55,54 @@
 			}
 		},
 		{
+			"path": "uni_modules/uni-cms/pages/article/add/add",
+			"style": {
+				"navigationBarTitleText": "发布文章",
+				"enablePullDownRefresh": false,
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "uni_modules/uni-cms/pages/article/edit/edit",
+			"style": {
+				"navigationBarTitleText": "编辑文章",
+				"enablePullDownRefresh": false,
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "uni_modules/uni-cms/pages/article/list/list",
+			"style": {
+				"navigationBarTitleText": "文章管理",
+				"enablePullDownRefresh": true,
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "uni_modules/uni-cms/pages/categories/add/add",
+			"style": {
+				"navigationBarTitleText": "添加分类",
+				"enablePullDownRefresh": false,
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "uni_modules/uni-cms/pages/categories/edit/edit",
+			"style": {
+				"navigationBarTitleText": "编辑分类",
+				"enablePullDownRefresh": false,
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "uni_modules/uni-cms/pages/categories/list/list",
+			"style": {
+				"navigationBarTitleText": "分类管理",
+				"enablePullDownRefresh": true,
+				"navigationStyle": "custom"
+			}
+		},
+		{
 			"path": "uni_modules/uni-id-pages/pages/login/login-withpwd",
 			"style": {
 				"navigationBarTitleText": "登录",
@@ -65,7 +113,6 @@
 		{
 			"path": "uni_modules/uni-id-pages/pages/login/login-withoutpwd",
 			"style": {
-				"navigationBarTitleText": "登录",
 				"enablePullDownRefresh": false,
 				"navigationStyle": "custom"
 			}
