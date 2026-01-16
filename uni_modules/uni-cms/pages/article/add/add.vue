@@ -7,7 +7,7 @@
 					          @input="() => autoSaveContent && autoSaveContent()" placeholder="文章标题"/>
 				</view>
 				<editor-component @textchange="onTextChange" @ready="onEditorReady"></editor-component>
-				<view class="settings">
+				<view class="settings" id="settings-section">
 					<uni-forms-item name="excerpt" label="文章摘要">
 						<textarea class="excerpt" placeholder="文章摘要" auto-height v-model="formData.excerpt"
 							@input="() => autoSaveContent && autoSaveContent()"></textarea>
@@ -73,8 +73,8 @@
 					<!--															 :localdata="formOptions.comment_status_localdata"></uni-data-checkbox>-->
 					<!--					</uni-forms-item>-->
 				</view>
-				<view class="uni-button-group m" style="padding-bottom: 50px">
-					<button class="uni-button" style="width: 100px;margin-right: 10px;" @click="submit(0)">存为草稿</button>
+				<view class="uni-button-group m" style="padding-bottom: 50px; display: flex; justify-content: center; gap: 10px;">
+					<button class="uni-button" style="width: 100px;" @click="submit(0)">存为草稿</button>
 					<button type="primary" class="uni-button" style="width: 100px;" @click="submit(1)">发布</button>
 				</view>
 			</view>
@@ -88,8 +88,8 @@
 					<text class="word-count" v-if="wordCount !== null">共 {{ wordCount }} 字</text>
 				</view>
 				<view class="right">
-					<view class="uni-button-group">
-						<button class="uni-button" style="width: 100px;margin-right: 10px;"
+					<view class="uni-button-group" style="display: flex; gap: 10px;">
+						<button class="uni-button" style="width: 100px;"
 							@click="submit(0)">存为草稿</button>
 						<button type="primary" class="uni-button" style="width: 100px;" @click="submit(1)">发布</button>
 					</view>
@@ -102,6 +102,18 @@
 			<uni-media-library mode="picker" :selected-count="1" :media-tabs="['image']"
 				@onInsert="onInsertCover"></uni-media-library>
 		</uni-drawer>
+
+		<!-- 悬浮按钮 -->
+		<view class="floating-buttons">
+			<view class="floating-btn" @click="scrollToTop">
+				<uni-icons type="arrowup" size="20" color="#fff"></uni-icons>
+				<text>顶部</text>
+			</view>
+			<view class="floating-btn" @click="scrollToSettings">
+				<uni-icons type="gear" size="20" color="#fff"></uni-icons>
+				<text>设置</text>
+			</view>
+		</view>
 	</view>
 </template>
 
@@ -437,6 +449,28 @@
 				const userInfo = uniCloud.getCurrentUserInfo();
 				this.currentUserNickname = userInfo.nickname;
 				this.formData.user_id = userInfo.uid;
+			},
+			// 滚动到顶部
+			scrollToTop() {
+				uni.pageScrollTo({
+					scrollTop: 0,
+					duration: 300
+				});
+			},
+			// 滚动到设置区域
+			scrollToSettings() {
+				this.$nextTick(() => {
+					setTimeout(() => {
+						uni.createSelectorQuery().select('#settings-section').boundingClientRect((rect) => {
+							if (rect) {
+								uni.pageScrollTo({
+									scrollTop: rect.top,
+									duration: 300
+								});
+							}
+						}).exec();
+					}, 100);
+				});
 			}
 		}
 	}
@@ -585,6 +619,37 @@
 ::v-deep .editor-toolbar.m {
 	top: 0 !important;
 	bottom: auto !important;
+}
+
+/* 悬浮按钮样式 */
+.floating-buttons {
+	position: fixed;
+	right: 20px;
+	bottom: 100px;
+	z-index: 999;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.floating-btn {
+	width: 50px;
+	height: 50px;
+	background-color: #2979ff;
+	border-radius: 50%;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	cursor: pointer;
+	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+	color: white;
+	font-size: 12px;
+	text-align: center;
+}
+
+.floating-btn:hover {
+	background-color: #2164d9;
 }
 
 </style>
