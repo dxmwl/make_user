@@ -1,0 +1,20 @@
+{
+  "passwordSecret": "your-secret-key-here",
+  "passwordAlgorithm": "sha256",
+  "tokenSecret": "your-token-secret-here",
+  "tokenExpiresIn": 7200,
+  "tokenUnit": "second",
+  "passwordErrorRetryTimes": 3,
+  "passwordErrorBanTime": 3600,
+  "autoSetInviteCode": true,
+  "forceInviteCode": false,
+  "app-plus": {
+    "tokenExpiresIn": 2592000
+  },
+  "service": {
+    "sms": {
+      "name": "你的应用名",
+      "verifyCodeExpire": 300
+    }
+  }
+}

@@ -5,38 +5,116 @@
 			"style": {
 				"navigationStyle": "custom"
 			}
-		},{
+		},
+		{
 			"path": "uni_modules/uni-cms-article/pages/list/list",
 			"style": {
 				"backgroundColor": "#FFFFFF",
 				"disableScroll": true,
 				"navigationStyle": "custom"
 			}
-		},  {
+		},
+		{
 			"path": "uni_modules/uni-cms-article/pages/search/search",
 			"style": {
 				"navigationStyle": "custom"
 			}
-		}, {
+		},
+		{
 			"path": "uni_modules/uni-cms-article/pages/detail/detail",
 			"style": {
 				"backgroundColor": "#FFFFFF",
 					"navigationStyle": "custom"
 			}
-		}, {
+		},
+		{
 			"path": "uni_modules/uni-cms-article/pages/detail/preview",
 			"style": {
 				"backgroundColor": "#FFFFFF",
 				"navigationBarTitleText": ""
 			}
-		}, {
+		},
+		{
 			"path": "uni_modules/uni-cms-article/pages/webview/webview",
 			"style": {
 				"navigationBarTitleText": ""
 			}
-		}, {
+		},
+		{
 			"path": "pages/about/about",
 			"style": {
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/user-center/user-center",
+			"style": {
+				"navigationBarTitleText": "用户中心",
+				"enablePullDownRefresh": false,
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "uni_modules/uni-id-pages/pages/login/login-withpwd",
+			"style": {
+				"navigationBarTitleText": "登录",
+				"enablePullDownRefresh": false,
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "uni_modules/uni-id-pages/pages/login/login-withoutpwd",
+			"style": {
+				"navigationBarTitleText": "登录",
+				"enablePullDownRefresh": false,
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "uni_modules/uni-id-pages/pages/login/login-smscode",
+			"style": {
+				"navigationBarTitleText": "手机验证码登录",
+				"enablePullDownRefresh": false,
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "uni_modules/uni-id-pages/pages/register/register",
+			"style": {
+				"navigationBarTitleText": "注册",
+				"enablePullDownRefresh": false,
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "uni_modules/uni-id-pages/pages/register/register-by-email",
+			"style": {
+				"navigationBarTitleText": "邮箱注册",
+				"enablePullDownRefresh": false,
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "uni_modules/uni-id-pages/pages/retrieve/retrieve",
+			"style": {
+				"navigationBarTitleText": "找回密码",
+				"enablePullDownRefresh": false,
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "uni_modules/uni-id-pages/pages/retrieve/retrieve-by-email",
+			"style": {
+				"navigationBarTitleText": "邮箱找回密码",
+				"enablePullDownRefresh": false,
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "uni_modules/uni-id-pages/pages/userinfo/userinfo",
+			"style": {
+				"navigationBarTitleText": "个人资料",
+				"enablePullDownRefresh": false,
 				"navigationStyle": "custom"
 			}
 		}

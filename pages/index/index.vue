@@ -14,6 +14,27 @@
 					</button>
 					<text class="nav-item active">首页</text>
 					<text class="nav-item" @click="goToAboutPage">关于</text>
+					<view class="user-section">
+						<view v-if="isLoggedIn" class="user-profile" @click="toggleUserMenu">
+							<image v-if="userInfo.avatar_file" class="avatar" :src="userInfo.avatar_file.url" mode="aspectFill"></image>
+							<image v-else class="avatar" src="/static/logo.png" mode="aspectFill"></image>
+							<text class="username">{{ userInfo.nickname || userInfo.username || userInfo.mobile || userInfo.email }}</text>
+							<uni-icons class="arrowdown" type="arrowdown" color="#666" size="13"></uni-icons>
+						</view>
+						<view v-else class="login-register-buttons">
+							<text class="nav-item login-btn" @click="goToLogin">登录</text>
+							<text class="nav-item register-btn" @click="goToRegister">注册</text>
+						</view>
+						<!-- 用户菜单，只在用户登录且菜单打开时显示 -->
+						<view v-if="showUserMenu && isLoggedIn" class="user-menu" @click.stop="closeUserMenu">
+							<view class="menu-item" @click="goToUserProfile">
+								<text>个人主页</text>
+							</view>
+							<view class="menu-item" @click="logout">
+								<text>退出登录</text>
+							</view>
+						</view>
+					</view>
 				</view>
 			</view>
 		</view>
@@ -185,7 +206,10 @@
 					name: 'DevOps',
 					count: 4
 				}],
-				tags: [] // 标签云数据，通过云函数动态加载
+				tags: [], // 标签云数据，通过云函数动态加载
+				isLoggedIn: false, // 是否已登录
+				userInfo: {}, // 用户信息
+				showUserMenu: false // 是否显示用户菜单
 			}
 		},
 		computed: {
@@ -206,6 +230,12 @@
 
 		},
 		onLoad() {
+			// 检查用户登录状态
+			this.checkLoginStatus();
+			// 监听登录成功事件
+			uni.$on('uni-id-pages-login-success', this.handleLoginSuccess);
+			// 监听登出事件
+			uni.$on('uni-id-pages-logout', this.handleLogout);
 			// 初始化热门文章
 			this.loadPopularPosts();
 			// 加载分类列表
@@ -214,8 +244,36 @@
 			this.loadRandomTags();
 			// 加载文章列表
 			this.loadArticles();
+			
+			// 如果有有效token，但全局store显示未登录，自动更新用户信息
+			this.initLoginState();
+		},
+		onShow() {
+			// 页面显示时再次检查登录状态，确保状态是最新的
+			this.checkLoginStatus();
+			// 更新用户信息显示
+			this.updateUserInfoDisplay();
+		},
+		onUnload() {
+			// 移除事件监听
+			uni.$off('uni-id-pages-login-success', this.handleLoginSuccess);
+			uni.$off('uni-id-pages-logout', this.handleLogout);
 		},
 		methods: {
+			checkLoginStatus() {
+				// 检查是否存在有效的登录token
+				const token = uni.getStorageSync('uni_id_token');
+				const tokenExpired = uni.getStorageSync('uni_id_token_expired');
+				
+				if (token && tokenExpired && Date.now() < tokenExpired) {
+					// 如果有有效token，设置为已登录状态
+					this.isLoggedIn = true;
+				} else {
+					this.isLoggedIn = false;
+				}
+				// 更新用户信息显示
+				this.updateUserInfoDisplay();
+			},
 			// 加载文章列表
 			async loadArticles() {
 				try {
@@ -484,6 +542,103 @@
 				uni.navigateTo({
 					url: `/uni_modules/uni-cms-article/pages/detail/detail?id=${postId}`
 				});
+			},
+			// 跳转到用户个人资料页
+			goToUserProfile() {
+				uni.navigateTo({
+					url: '/uni_modules/uni-id-pages/pages/userinfo/userinfo'
+				});
+			},
+			// 跳转到登录页面
+			goToLogin() {
+				uni.navigateTo({
+					url: '/uni_modules/uni-id-pages/pages/login/login-withpwd'
+				});
+			},
+			// 跳转到注册页面
+			goToRegister() {
+				uni.navigateTo({
+					url: '/uni_modules/uni-id-pages/pages/register/register'
+				});
+			},
+			// 处理登录成功事件
+			handleLoginSuccess() {
+				this.checkLoginStatus();
+				this.updateUserInfoDisplay();
+			},
+			// 处理登出事件
+			handleLogout() {
+				this.checkLoginStatus();
+				this.updateUserInfoDisplay();
+			},
+			// 初始化登录状态
+			async initLoginState() {
+				const token = uni.getStorageSync('uni_id_token');
+				const tokenExpired = uni.getStorageSync('uni_id_token_expired');
+				
+				if (token && tokenExpired && Date.now() < tokenExpired) {
+					// 检查全局store状态
+					if (this.$uniIdPagesStore && this.$uniIdPagesStore.store && !this.$uniIdPagesStore.store.hasLogin) {
+						// 有有效token但store显示未登录，需要更新用户信息
+						try {
+							await this.$uniIdPagesStore.mutations.updateUserInfo();
+						} catch (error) {
+							console.error('更新用户信息失败:', error);
+						}
+					}
+				}
+			},
+			// 更新用户信息显示
+			updateUserInfoDisplay() {
+				if (this.isLoggedIn && this.$uniIdPagesStore && this.$uniIdPagesStore.store) {
+					this.userInfo = this.$uniIdPagesStore.store.userInfo || {};
+				} else {
+					this.userInfo = {};
+				}
+			},
+			// 切换用户菜单显示
+			toggleUserMenu() {
+				this.showUserMenu = !this.showUserMenu;
+			},
+			// 关闭用户菜单
+			closeUserMenu() {
+				this.showUserMenu = false;
+			},
+			// 退出登录
+			async logout() {
+				if (this.$uniIdPagesStore && this.$uniIdPagesStore.mutations) {
+					// 手动清除登录状态，避免页面跳转
+					const uniIdCo = uniCloud.importObject("uni-id-co");
+					try {
+						// 尝试调用服务端的logout
+						if(uniCloud.getCurrentUserInfo().tokenExpired > Date.now()){
+							await uniIdCo.logout();
+						}
+					} catch(e) {
+						console.error(e);
+					}
+					
+					// 清除本地存储的token
+					uni.removeStorageSync('uni_id_token');
+					uni.setStorageSync('uni_id_token_expired', 0);
+					
+					// 发送登出事件通知其他组件更新状态
+					uni.$emit('uni-id-pages-logout');
+					
+					// 清除用户信息
+					this.$uniIdPagesStore.mutations.setUserInfo({}, {cover: true});
+					
+				} else {
+					// 如果没有$uniIdPagesStore，则手动清除
+					uni.removeStorageSync('uni_id_token');
+					uni.removeStorageSync('uni_id_token_expired');
+				}
+				
+				// 更新本地状态
+				this.isLoggedIn = false;
+				this.userInfo = {};
+				this.showUserMenu = false;
+				// 不需要跳转页面，只需更新状态
 			}
 		}
 	}
@@ -591,6 +746,98 @@
 		background: #ecf0f1;
 	}
 	
+	.user-section {
+		margin-left: auto; /* 将用户部分推到最右边 */
+		position: relative; /* 为下拉菜单定位 */
+	}
+	
+	.user-profile {
+		display: flex;
+		align-items: center;
+		padding: 8rpx 16rpx;
+		border-radius: 30rpx;
+		/* 去掉背景色 */
+		color: #2c3e50;
+		font-size: 26rpx;
+		cursor: pointer;
+		transition: background-color 0.3s;
+	}
+	
+	.user-profile:hover {
+		background: #ecf0f1;
+	}
+	
+	.avatar {
+		width: 40rpx;
+		height: 40rpx;
+		border-radius: 50%;
+		margin-right: 10rpx;
+	}
+	
+	.username {
+		max-width: 120rpx;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		margin-right: 5rpx;
+	}
+	
+	.arrowdown {
+		margin-top: 4px;
+		margin-left: 3px;
+	}
+	
+	.user-menu {
+		position: absolute;
+		right: 0;
+		top: calc(100% + 5rpx);
+		width: 150rpx;
+		background-color: #fff;
+		border: 1rpx solid #ebeef5;
+		border-radius: 4rpx;
+		box-shadow: 0 6px 12px 0 rgba(0, 0, 0, .5);
+		z-index: 1000;
+	}
+	
+	.menu-item {
+		padding: 15rpx;
+		font-size: 28rpx;
+		color: #555;
+		cursor: pointer;
+		transition: background-color 0.2s;
+	}
+	
+	.menu-item:hover {
+		background-color: #f5f5f5;
+	}
+	
+	.login-register-buttons {
+		display: flex;
+		gap: 10rpx;
+	}
+	
+	.login-btn {
+		background: #ecf0f1;
+		color: #2c3e50;
+		border-radius: 30rpx;
+		font-size: 26rpx;
+	}
+	
+	.login-btn:hover {
+		background: #d5dbdb;
+	}
+	
+	.register-btn {
+		background: #3498db;
+		color: white;
+		border-radius: 30rpx;
+		font-size: 26rpx;
+	}
+	
+	.register-btn:hover {
+		background: #2980b9;
+	}
+
 	.category-nav {
 		background: #fff;
 		border-bottom: 1rpx solid #eee;
