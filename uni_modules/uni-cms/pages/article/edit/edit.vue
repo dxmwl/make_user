@@ -198,7 +198,6 @@ export default {
 	components: {
 		EditorComponent,
 		'uni-icons': () => import('@/uni_modules/uni-icons/components/uni-icons/uni-icons.vue'),
-		'uni-tag': () => import('@/uni_modules/uni-tag/components/uni-tag/uni-tag.vue'),
     // #ifdef H5
     ArticlePreview
     // #endif
