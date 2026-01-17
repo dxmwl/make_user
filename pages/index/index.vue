@@ -1,51 +1,23 @@
 <template>
 	<view class="blog-home">
-		<!-- 顶部导航栏 -->
-		<view class="header">
-			<view class="header-content">
-				<view class="logo-section">
-					<image class="logo" src="/static/logo.png" mode="aspectFit"></image>
-					<text class="site-name">码客——程序员交流社区</text>
-				</view>
-				<view class="nav-section">
-					<button class="search-button" @click="goToSearchPage">
-						<text class="search-icon">🔍</text>
-						<text class="search-text">搜索文章</text>
-					</button>
-					<text class="nav-item active">首页</text>
-					<text class="nav-item" @click="goToAboutPage">关于</text>
-					<view class="user-section">
-						<!-- 发布文章按钮，仅在用户登录时显示 -->
-						<view v-if="isLoggedIn" class="publish-btn" @click="goToPublishArticle">
-							<uni-icons type="compose" size="20" color="#fff"></uni-icons>
-							<text class="publish-text">发布</text>
-						</view>
-						<view v-if="isLoggedIn" class="user-profile" @click="toggleUserMenu">
-							<image v-if="userInfo.avatar_file" class="avatar" :src="userInfo.avatar_file.url" mode="aspectFill"></image>
-							<image v-else class="avatar" src="/static/logo.png" mode="aspectFill"></image>
-							<text class="username">{{ userInfo.nickname || userInfo.username || userInfo.mobile || userInfo.email }}</text>
-							<uni-icons class="arrowdown" type="arrowdown" color="#666" size="13"></uni-icons>
-						</view>
-						<view v-else class="login-register-buttons">
-							<text class="nav-item login-btn" @click="goToLogin">登录</text>
-							<text class="nav-item register-btn" @click="goToRegister">注册</text>
-						</view>
-						<!-- 用户菜单，只在用户登录且菜单打开时显示 -->
-						<view v-if="showUserMenu && isLoggedIn" class="user-menu" @click.stop="closeUserMenu">
-							<view class="menu-item" @click="goToUserProfile">
-								<text>个人主页</text>
-							</view>
-							<view class="menu-item" @click="logout">
-								<text>退出登录</text>
-							</view>
-						</view>
-					</view>
-				</view>
-			</view>
-		</view>
+		<Header 
+			:active-tab="activeTab"
+			:is-logged-in="isLoggedIn"
+			:user-info="userInfo"
+			:show-user-menu="showUserMenu"
+			@switchTab="switchTab"
+			@goToSearchPage="goToSearchPage"
+			@goToPublishArticle="goToPublishArticle"
+			@toggleUserMenu="toggleUserMenu"
+			@goToLogin="goToLogin"
+			@goToRegister="goToRegister"
+			@goToUserProfile="goToUserProfile"
+			@logout="logout"
+			@closeUserMenu="closeUserMenu"
+		/>
 		
 		<!-- 分类导航 -->
-		<view class="category-nav">
+		<view class="category-nav" v-if="activeTab === 'home'">
 			<scroll-view scroll-x="true" class="category-scroll">
 				<view class="category-item" 
 					v-for="(category, index) in categoriesList" 
@@ -60,104 +32,163 @@
 		<!-- 主要内容区域 -->
 		<view class="main-container">
 			<view class="container">
-				<!-- 博客文章列表 -->
-				<view class="blog-posts">
-					<!-- 使用 uni-cms-article 提供的标准列表组件 -->
-					<unicloud-db ref='udb' v-slot:default="{ data, pagination, hasMore, loading, error, options }" @error="onqueryerror"
-						:collection="colList" :page-size="10" orderby="publish_date desc" @load="listLoad">
-						<!-- #ifndef APP-NVUE -->
-						<scroll-view
-							scroll-y
-							class="uni-list"
-							refresher-enabled
-							@refresherrefresh="refresh"
-							@scrolltolower="loadMore"
-						>
-							<template v-for="item in data">
-								<not-cover v-if="item.thumbnail && item.thumbnail.length === 0" :data="item" ></not-cover>
-								<right-small-cover v-else-if="item.thumbnail && item.thumbnail.length === 1"
-									:data="item" ></right-small-cover>
-								<three-cover v-else-if="item.thumbnail && item.thumbnail.length >= 3"
-									:data="item" ></three-cover>
-							</template>
-							<!-- 加载状态 -->
-							<uni-load-state @networkResume="refresh"
-								:state="{ data: data, pagination, hasMore, loading, error }"
-								@clickLoadMore="loadMore">
-							</uni-load-state>
-						</scroll-view>
-						<!-- #endif -->
-						<!-- #ifdef APP-NVUE -->
-						<list class="uni-list" :border="false">
-							<refresh-box :loading="loading" @refresh="refresh"></refresh-box>
-							<template v-for="item in data">
-								<not-cover v-if="item.thumbnail && item.thumbnail.length === 0" :data="item" ></not-cover>
-								<right-small-cover v-else-if="item.thumbnail && item.thumbnail.length === 1"
-									:data="item" ></right-small-cover>
-								<three-cover v-else-if="item.thumbnail && item.thumbnail.length >= 3"
-									:data="item" ></three-cover>
-							</template>
-							<uni-load-state @networkResume="refresh"
-								:state="{ data: data, pagination, hasMore, loading, error }"
-								@clickLoadMore="loadMore">
-							</uni-load-state>
-						</list>
-						<!-- #endif -->
-					</unicloud-db>
+				<!-- 首页内容 - 条件渲染 -->
+				<view v-if="activeTab === 'home'">
+					<div class="home-main-sidebar-container">
+						<!-- 博客文章列表 -->
+						<view class="blog-posts">
+							<!-- 使用 uni-cms-article 提供的标准列表组件 -->
+							<unicloud-db ref='udb' v-slot:default="{ data, pagination, hasMore, loading, error, options }" @error="onqueryerror"
+								:collection="colList" :page-size="10" orderby="publish_date desc" @load="listLoad">
+							<!-- #ifndef APP-NVUE -->
+							<scroll-view
+								scroll-y
+								class="uni-list"
+								refresher-enabled
+								@refresherrefresh="refresh"
+								@scrolltolower="loadMore"
+							>
+								<template v-for="item in data">
+									<not-cover v-if="item.thumbnail && item.thumbnail.length === 0" :data="item" ></not-cover>
+									<right-small-cover v-else-if="item.thumbnail && item.thumbnail.length === 1"
+										:data="item" ></right-small-cover>
+									<three-cover v-else-if="item.thumbnail && item.thumbnail.length >= 3"
+										:data="item" ></three-cover>
+								</template>
+								<!-- 加载状态 -->
+								<uni-load-state @networkResume="refresh"
+									:state="{ data: data, pagination, hasMore, loading, error }"
+									@clickLoadMore="loadMore">
+								</uni-load-state>
+							</scroll-view>
+							<!-- #endif -->
+							<!-- #ifdef APP-NVUE -->
+							<list class="uni-list" :border="false">
+								<refresh-box :loading="loading" @refresh="refresh"></refresh-box>
+								<template v-for="item in data">
+									<not-cover v-if="item.thumbnail && item.thumbnail.length === 0" :data="item" ></not-cover>
+									<right-small-cover v-else-if="item.thumbnail && item.thumbnail.length === 1"
+										:data="item" ></right-small-cover>
+									<three-cover v-else-if="item.thumbnail && item.thumbnail.length >= 3"
+										:data="item" ></three-cover>
+								</template>
+								<uni-load-state @networkResume="refresh"
+									:state="{ data: data, pagination, hasMore, loading, error }"
+									@clickLoadMore="loadMore">
+								</uni-load-state>
+							</list>
+							<!-- #endif -->
+							</unicloud-db>
+						</view>
+						
+						<!-- 侧边栏 -->
+						<view class="sidebar">
+							<!-- 热门文章 -->
+							<view class="widget">
+								<h3 class="widget-title">热门文章</h3>
+								<view class="popular-post" v-for="(popular, index) in popularPosts" :key="index">
+								<text class="popular-title" @click="goToArticleDetail(popular._id)">{{ popular.title }}</text>
+								<text class="popular-date">{{ publishTime(popular.publish_date) }}</text>
+							</view>
+							</view>
+							
+						<!-- 分类 -->
+							<view class="widget">
+								<h3 class="widget-title">分类</h3>
+								<view class="categories">
+								<text class="category" v-for="(cat, index) in categoriesList.filter(c => c._id !== 'all')" :key="cat._id" @click="filterByCategory(cat._id)">
+									{{ cat.name }} ({{ cat.count }})
+								</text>
+								</view>
+							</view>
+							
+						<!-- 标签云 -->
+							<view class="widget">
+								<h3 class="widget-title">标签云</h3>
+							<view class="tags-cloud">
+								<text class="tag-item" v-for="(tag, index) in tags" :key="index" @click="filterByTag(tag)">
+									{{ tag }}
+								</text>
+							</view>
+							</view>
+						</view>
+					</div>
 				</view>
 				
-				<!-- 侧边栏 -->
-				<view class="sidebar">
-					<!-- 热门文章 -->
-					<view class="widget">
-						<h3 class="widget-title">热门文章</h3>
-						<view class="popular-post" v-for="(popular, index) in popularPosts" :key="index">
-							<text class="popular-title" @click="goToArticleDetail(popular._id)">{{ popular.title }}</text>
-							<text class="popular-date">{{ publishTime(popular.publish_date) }}</text>
-						</view>
+				<!-- 交流圈内容 - 条件渲染 -->
+				<view v-if="activeTab === 'circle'" class="circle-content">
+					<!-- 交流圈分类导航 -->
+					<view class="category-nav">
+						<scroll-view scroll-x="true" class="category-scroll">
+							<view class="category-item" 
+								v-for="(category, index) in circleCategoriesList" 
+								:key="category._id"
+								:class="{ active: activeCircleCategory === category._id }"
+								@click="changeCircleCategory(category._id)">
+								<text>{{ category.name }}</text>
+							</view>
+							<view class="category-item" 
+								:class="{ active: activeCircleCategory === 'all' }"
+								@click="changeCircleCategory('all')">
+								<text>全部</text>
+							</view>
+						</scroll-view>
 					</view>
 					
-					<!-- 分类 -->
-					<view class="widget">
-						<h3 class="widget-title">分类</h3>
-						<view class="categories">
-							<text class="category" v-for="(cat, index) in categoriesList.filter(c => c._id !== 'all')" :key="cat._id" @click="filterByCategory(cat._id)">
-								{{ cat.name }} ({{ cat.count }})
-							</text>
+					<!-- 交流圈列表 -->
+					<view class="circle-list">
+						<view class="circle-item" v-for="(item, index) in circleList" :key="item._id" @click="goToCircleDetail(item._id)">
+							<view class="circle-header">
+								<image class="avatar" :src="item.author_avatar || '/static/logo.png'" mode="aspectFill"></image>
+								<view class="user-info">
+									<text class="nickname">{{ item.author_nickname }}</text>
+									<text class="time">{{ formatTime(item.create_time) }}</text>
+								</view>
+							</view>
+							<view class="circle-body">
+								<text class="title">{{ item.title }}</text>
+								<text class="description">{{ item.description }}</text>
+							</view>
+							<view class="circle-footer">
+								<view class="group-info">
+									<text class="qq-group" v-if="item.qq_group">QQ群: {{ item.qq_group }}</text>
+									<text class="wx-group" v-if="item.wx_group">微信群: {{ item.wx_group }}</text>
+								</view>
+							</view>
 						</view>
 					</view>
-					
-					<!-- 标签云 -->
-					<view class="widget">
-						<h3 class="widget-title">标签云</h3>
-						<view class="tags-cloud">
-							<text class="tag-item" v-for="(tag, index) in tags" :key="index" @click="filterByTag(tag)">
-								{{ tag }}
-							</text>
+				</view>
+				
+				<!-- 关于页面内容 - 条件渲染 -->
+				<view v-if="activeTab === 'about'" class="about-content">
+					<view class="about-container">
+						<view class="about-card">
+							<image class="logo" src="/static/logo.png" mode="aspectFit"></image>
+							<text class="app-name">码客——程序员交流社区</text>
+							<text class="version">版本: v1.0.0</text>
+							
+							<view class="about-section">
+								<text class="section-title">关于我们</text>
+								<text class="section-content">码客是一个专注于程序员技术交流的社区平台，致力于为开发者提供一个分享知识、解决问题、共同成长的空间。</text>
+							</view>
+							
+							<view class="about-section">
+								<text class="section-title">联系我们</text>
+								<text class="section-content">邮箱: contact@makemoney.com</text>
+								<text class="section-content">QQ群: 123456789</text>
+							</view>
+							
+							<view class="about-section">
+								<text class="section-title">免责声明</text>
+								<text class="section-content">本平台仅供学习交流使用，我们不保证内容的准确性，用户在使用过程中产生的风险由用户自行承担。</text>
+							</view>
 						</view>
 					</view>
 				</view>
 			</view>
 		</view>
 		
-		<!-- 页脚 -->
-		<view class="footer">
-			<view class="footer-content">
-				<text class="copyright">© 2026 码客——程序员交流社区</text>
-				<view class="beian-info">
-					<text class="beian-text" @click="openBeianLink('miit')">豫ICP备2023000435号-1</text>
-					<text class="beian-text" @click="openBeianLink('gongan')">豫公网安备41040202000218号</text>
-					<text class="company">河南点线面网络科技有限公司</text>
-				</view>
-			</view>
-			
-			<!-- 友情链接 -->
-			<view class="friend-links">
-				<text class="friend-link-title">友情链接：</text>
-				<a class="friend-link" href="https://www.dxmwl.com" @click="openFriendLink('https://www.dxmwl.com')" target="_blank">点线面网络</a>
-				<a class="friend-link" href="https://official.youkeyun.dxmwl.com" @click="openFriendLink('https://official.youkeyun.dxmwl.com')" target="_blank">友客云</a>
-			</view>
-		</view>
+		<Footer />
 	</view>
 </template>
 
@@ -169,6 +200,8 @@
 	import rightSmallCover from '@/uni_modules/uni-cms-article/components/list-template/right-small-cover.vue';
 	import threeCover from '@/uni_modules/uni-cms-article/components/list-template/three-cover.vue';
 	import refreshBox from '@/uni_modules/uni-cms-article/components/refresh-box/refreshBox.nvue';
+	import Header from '@/pages/components/Header.vue';
+	import Footer from '@/pages/components/Footer.vue';
 	
 	const db = uniCloud.database();
 	const articleDBName = 'uni-cms-articles'
@@ -180,7 +213,9 @@
 			notCover,
 			rightSmallCover,
 			threeCover,
-			refreshBox
+			refreshBox,
+			Header,
+			Footer
 		},
 		data() {
 			return {
@@ -214,7 +249,11 @@
 				tags: [], // 标签云数据，通过云函数动态加载
 				isLoggedIn: false, // 是否已登录
 				userInfo: {}, // 用户信息
-				showUserMenu: false // 是否显示用户菜单
+				showUserMenu: false, // 是否显示用户菜单
+				activeTab: 'home', // 当前激活的标签页
+				activeCircleCategory: 'all', // 当前选中的交流圈分类
+				circleCategoriesList: [], // 交流圈分类列表
+				circleList: [] // 交流圈列表
 			}
 		},
 		computed: {
@@ -645,6 +684,18 @@
 				this.showUserMenu = false;
 				// 不需要跳转页面，只需更新状态
 			},
+			// 跳转到首页
+			goToIndexPage() {
+				uni.switchTab({
+					url: '/pages/index/index'
+				});
+			},
+			// 跳转到交流圈列表
+			goToCircleList() {
+				uni.navigateTo({
+					url: '/pages/circle/list'
+				});
+			},
 			// 跳转到发布文章页面
 			goToPublishArticle() {
 				// 检查用户是否具有发布文章的权限
@@ -652,6 +703,101 @@
 				uni.navigateTo({
 					url: '/uni_modules/uni-cms/pages/article/add/add'
 				});
+			},
+			// 切换交流圈分类
+			changeCircleCategory(categoryId) {
+				this.activeCircleCategory = categoryId;
+				// 可以在这里添加按分类筛选交流圈的逻辑
+			},
+			// 跳转到交流圈详情页
+			goToCircleDetail(circleId) {
+				uni.navigateTo({
+					url: `/pages/circle/detail?id=${circleId}`
+				});
+			},
+			// 切换标签页
+			switchTab(tabName) {
+				this.activeTab = tabName;
+				// 根据标签加载对应的数据
+				if (tabName === 'circle' && this.circleList.length === 0) {
+					this.loadCircleData();
+				}
+			},
+			// 切换交流圈分类
+			changeCircleCategory(categoryId) {
+				this.activeCircleCategory = categoryId;
+				// 可以在这里添加按分类筛选交流圈的逻辑
+			},
+			// 跳转到交流圈详情页
+			goToCircleDetail(circleId) {
+				uni.navigateTo({
+					url: `/pages/circle/detail?id=${circleId}`
+				});
+			},
+			// 加载交流圈数据
+			async loadCircleData() {
+				try {
+					// 加载交流圈分类
+					const categoryResult = await uniCloud.callFunction({
+						name: 'get-circle-category-list'
+					});
+					if(categoryResult && categoryResult.result && categoryResult.result.code === 0) {
+						this.circleCategoriesList = categoryResult.result.data || [];
+					}
+					
+					// 加载交流圈列表
+					const circleResult = await uniCloud.callFunction({
+						name: 'get-circle-list'
+					});
+					if(circleResult && circleResult.result && circleResult.result.code === 0) {
+						this.circleList = circleResult.result.data || [];
+					}
+				} catch (error) {
+					console.error('加载交流圈数据失败:', error);
+					// 使用静态数据作为后备
+					this.circleList = [
+						{
+							_id: '1',
+							title: '前端技术交流群',
+							description: '这是一个前端技术交流群，主要讨论JavaScript、Vue、React等前端技术。',
+							qq_group: '123456789',
+							wx_group: 'frontend_group',
+							author_nickname: '前端小明',
+							author_avatar: '/static/logo.png',
+							create_time: Date.now()
+						},
+						{
+							_id: '2',
+							title: '后端技术交流群',
+							description: '这是一个后端技术交流群，主要讨论Java、Python、Node.js等后端技术。',
+							qq_group: '987654321',
+							wx_group: 'backend_group',
+							author_nickname: '后端小李',
+							author_avatar: '/static/logo.png',
+							create_time: Date.now()
+						}
+					];
+				}
+			},
+			// 格式化时间
+			formatTime(time) {
+				if (!time) return '';
+				const date = new Date(time);
+				const now = new Date();
+				const diffMs = now - date;
+				const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+				const diffHours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+				const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+				
+				if (diffDays > 0) {
+					return `${diffDays}天前`;
+				} else if (diffHours > 0) {
+					return `${diffHours}小时前`;
+				} else if (diffMinutes > 0) {
+					return `${diffMinutes}分钟前`;
+				} else {
+					return '刚刚';
+				}
 			}
 		}
 	}
@@ -1210,11 +1356,39 @@
 			padding: 20rpx;
 			width: 90%; /* 移动端稍宽一些 */
 		}
-		
+				
 		.logo-section {
 			justify-content: center;
 		}
-		
+				
+		.nav-section {
+			flex-direction: column;
+			align-items: flex-start;
+			gap: 15rpx;
+		}
+				
+		.nav-menu {
+			flex-direction: column;
+			gap: 10rpx;
+			width: 100%;
+		}
+				
+		.nav-menu li {
+			justify-content: center;
+			padding: 15rpx;
+		}
+				
+		.nav-actions {
+			width: 100%;
+			justify-content: center;
+			gap: 10rpx;
+		}
+				
+		.search-button {
+			width: 100%;
+			justify-content: center;
+		}
+				
 		.search-section {
 			order: 3;
 			flex: none;
@@ -1222,79 +1396,72 @@
 			max-width: 600rpx;
 			margin-left: 0;
 		}
-		
+				
 		.search-input {
 			max-width: none;
 		}
-		
-		.nav-section {
-			order: 2;
-			flex: none;
-			width: 100%;
-			justify-content: center;
-		}
-		
+				
 		.category-scroll {
 			width: 90%; /* 移动端更宽一些 */
 			padding: 0;
 		}
-		
+				
 		.category-item {
 			padding: 12rpx 20rpx;
 			font-size: 26rpx;
 			margin: 0 5rpx;
 		}
-		
+				
 		.container {
 			width: 90%; /* 移动端稍宽一些 */
 			flex-direction: column;
 		}
-		
+				
 		.sidebar {
 			width: 100%;
 			min-width: auto;
 		}
-		
+				
 		.thumbnail {
 			width: 120rpx;
 			height: 80rpx;
 		}
-		
+				
 		.thumbnails .img {
 			height: 120rpx;
 		}
-		
+				
 		.footer-content {
 			width: 90%;
 			flex-direction: column;
 			gap: 10rpx;
 		}
-		
+				
 		.copyright {
 			text-align: center;
 		}
-		
+				
 		.beian-info {
 			flex-direction: column;
 			gap: 8rpx;
 		}
-		
+				
 		.company {
 			text-align: center;
 		}
-		
+				
 		.friend-links {
 			width: 90%;
 			flex-direction: column;
 			align-items: center;
 			gap: 10rpx;
 		}
-		
+				
 		.friend-link-title {
 			margin-right: 0;
 			margin-bottom: 10rpx;
 		}
-		
+				
 		.friend-link {
 			margin: 0 10rpx;
 		}
@@ -1310,5 +1477,197 @@
 		
 		.list-item {
 			width: 100%;
+		}
+		
+		/* 导航栏样式 */
+		.nav-section {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			flex: 1;
+		}
+		
+		.nav-menu {
+			display: flex;
+			list-style: none;
+			margin: 0;
+			padding: 0;
+			gap: 40rpx;
+		}
+		
+		.nav-menu li {
+			display: flex;
+			align-items: center;
+			padding: 10rpx 20rpx;
+			border-radius: 6rpx;
+			cursor: pointer;
+			transition: background-color 0.3s;
+		}
+		
+		.nav-menu li.active {
+			background: #3498db;
+			color: white;
+		}
+		
+		.nav-menu li:hover:not(.active) {
+			background: #ecf0f1;
+		}
+		
+		.nav-actions {
+			display: flex;
+			align-items: center;
+			gap: 20rpx;
+		}
+		
+		/* 首页主内容和侧边栏容器 */
+		.home-main-sidebar-container {
+			display: flex;
+			gap: 30rpx;
+		}
+		
+		/* 交流圈内容样式 */
+		.circle-content {
+			width: 100%;
+			margin: 20rpx auto;
+			background: #fff;
+			border-radius: 12rpx;
+			box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
+			padding: 20rpx 0;
+		}
+		
+		.circle-list {
+			width: 100%;
+			padding: 0 20rpx;
+		}
+		
+		.circle-item {
+			padding: 20rpx;
+			border: 1rpx solid #eee;
+			border-radius: 12rpx;
+			margin-bottom: 20rpx;
+			background: #fafafa;
+		}
+		
+		.circle-header {
+			display: flex;
+			align-items: center;
+			margin-bottom: 15rpx;
+		}
+		
+		.circle-header .avatar {
+			width: 60rpx;
+			height: 60rpx;
+			border-radius: 50%;
+			margin-right: 15rpx;
+		}
+		
+		.user-info {
+			flex: 1;
+		}
+		
+		.nickname {
+			font-size: 28rpx;
+			font-weight: bold;
+			color: #2c3e50;
+		}
+		
+		.time {
+			font-size: 24rpx;
+			color: #95a5a6;
+			margin-left: 20rpx;
+		}
+		
+		.circle-body {
+			margin-bottom: 15rpx;
+		}
+		
+		.title {
+			font-size: 32rpx;
+			font-weight: bold;
+			color: #2c3e50;
+			display: block;
+			margin-bottom: 10rpx;
+		}
+		
+		.description {
+			font-size: 28rpx;
+			color: #7f8c8d;
+			line-height: 1.5;
+		}
+		
+		.circle-footer {
+			margin-top: 15rpx;
+			padding-top: 15rpx;
+			border-top: 1rpx solid #eee;
+		}
+		
+		.group-info {
+			display: flex;
+			flex-direction: column;
+			gap: 8rpx;
+		}
+		
+		.qq-group, .wx-group {
+			font-size: 26rpx;
+			color: #3498db;
+		}
+		
+		/* 关于页面样式 */
+		.about-content {
+			width: 100%;
+			margin: 20rpx auto;
+			padding: 30rpx;
+			background: #fff;
+			border-radius: 12rpx;
+			box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
+		}
+		
+		.about-card {
+			text-align: center;
+		}
+		
+		.about-card .logo {
+			width: 120rpx;
+			height: 120rpx;
+			margin: 0 auto 20rpx;
+			border-radius: 20rpx;
+		}
+		
+		.app-name {
+			font-size: 36rpx;
+			font-weight: bold;
+			color: #2c3e50;
+			display: block;
+			margin-bottom: 10rpx;
+		}
+		
+		.version {
+			font-size: 28rpx;
+			color: #95a5a6;
+			display: block;
+			margin-bottom: 30rpx;
+		}
+		
+		.about-section {
+			margin-bottom: 30rpx;
+			text-align: left;
+		}
+		
+		.section-title {
+			font-size: 32rpx;
+			font-weight: bold;
+			color: #2c3e50;
+			display: block;
+			margin-bottom: 15rpx;
+			border-left: 6rpx solid #3498db;
+			padding-left: 15rpx;
+		}
+		
+		.section-content {
+			font-size: 28rpx;
+			color: #7f8c8d;
+			line-height: 1.6;
+			display: block;
+			margin-bottom: 10rpx;
 		}
 	</style>
