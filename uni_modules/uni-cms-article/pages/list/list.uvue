@@ -16,7 +16,7 @@
         computed: {
             colList(): any[] {
                 return [
-                    db.collection('uni-cms-articles').where("\"article_status\" == 1").field('thumbnail,title,publish_date,user_id').getTemp(), // 文章集合
+                    db.collection('uni-cms-articles').where("\"article_status\" == 1").field('thumbnail,title,publish_date,user_id,excerpt,tags').getTemp(), // 文章集合
                     db.collection('uni-id-users').field('_id,nickname').getTemp() // 用户集合
                 ]
             }

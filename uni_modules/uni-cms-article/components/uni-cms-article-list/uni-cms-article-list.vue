@@ -44,6 +44,14 @@
             <view class="list-item__content-title">
               <text class="text">{{ item.title }}</text>
             </view>
+            <view v-if="item.excerpt" class="list-item__content-excerpt">
+              <text class="text excerpt-text">{{ item.excerpt }}</text>
+            </view>
+            <view v-if="item.tags && item.tags.length > 0" class="list-item__content-tags">
+              <view v-for="(tag, index) in item.tags" :key="index" class="tag">
+                <text class="text tag-text">{{ tag }}</text>
+              </view>
+            </view>
             <view class="list-item__content-info">
               <view class="list-item__author">
                 <text class="text">{{ item!.user_id!.length > 0 ? item.user_id[0].nickname : '' }}</text>
@@ -58,6 +66,14 @@
           <view class="list-item__content">
             <view class="list-item__content-title">
               <text class="text">{{ item.title }}</text>
+            </view>
+            <view v-if="item.excerpt" class="list-item__content-excerpt">
+              <text class="text excerpt-text">{{ item.excerpt }}</text>
+            </view>
+            <view v-if="item.tags && item.tags.length > 0" class="list-item__content-tags">
+              <view v-for="(tag, index) in item.tags" :key="index" class="tag">
+                <text class="text tag-text">{{ tag }}</text>
+              </view>
             </view>
             <view class="list-item__content-info">
               <view class="list-item__author">
@@ -81,6 +97,14 @@
           <view class="list-item__content">
             <view class="list-item__content-title">
               <text>{{ item.title }}</text>
+            </view>
+            <view v-if="item.excerpt" class="list-item__content-excerpt">
+              <text class="text excerpt-text">{{ item.excerpt }}</text>
+            </view>
+            <view v-if="item.tags && item.tags.length > 0" class="list-item__content-tags">
+              <view v-for="(tag, index) in item.tags" :key="index" class="tag">
+                <text class="text tag-text">{{ tag }}</text>
+              </view>
             </view>
             <view class="list-item__thumbnails">
               <image
@@ -119,6 +143,8 @@ type ArticleItem = {
   publish_date: number
   thumbnail: string[]
   user_id: ArticleAuthor[]
+  excerpt: string
+  tags: string[]
 }
 
 import {parseImageUrl} from "@/uni_modules/uni-cms-article/common/parse-image-url.uts";
@@ -177,7 +203,9 @@ export default {
           title: item.getString('title')!,
           publish_date: item.getNumber('publish_date')!,
           thumbnail: [],
-          user_id: item.getArray<ArticleAuthor>('user_id')! as ArticleAuthor[]
+          user_id: item.getArray<ArticleAuthor>('user_id')! as ArticleAuthor[],
+          excerpt: item.getString('excerpt')!,
+          tags: item.getArray<string>('tags')! as string[]
         }
 
         if (typeof item.getAny('thumbnail') === 'string') {
@@ -343,6 +371,37 @@ export default {
         font-size: 30rpx;
         color: #333333;
         line-height: 44rpx;
+      }
+    }
+
+    &-excerpt {
+      margin-top: 10rpx;
+      .excerpt-text {
+        font-size: 26rpx;
+        color: #666666;
+        line-height: 36rpx;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+        overflow: hidden;
+      }
+    }
+
+    &-tags {
+      margin-top: 10rpx;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6rpx;
+      
+      .tag {
+        background-color: #f0f0f0;
+        border-radius: 20rpx;
+        padding: 6rpx 12rpx;
+        
+        .tag-text {
+          font-size: 20rpx;
+          color: #888888;
+        }
       }
     }
 

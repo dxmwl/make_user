@@ -8,6 +8,12 @@
     <template v-slot:body>
       <view class="main">
         <text class="title">{{ data.title }}</text>
+        <view v-if="data.excerpt" class="excerpt">
+          <text class="excerpt-text">{{ data.excerpt }}</text>
+        </view>
+        <view v-if="data.tags && data.tags.length > 0" class="tags">
+          <text v-for="(tag, index) in data.tags" :key="index" class="tag">{{ tag }}</text>
+        </view>
         <view class="thumbnails">
           <image
               v-for="image in data.thumbnail"

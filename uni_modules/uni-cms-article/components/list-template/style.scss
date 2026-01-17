@@ -12,8 +12,39 @@
     flex-direction: column;
     flex: 1;
     .title {
-      font-size: 30rpx;
+      font-size: 32rpx;
       color: #333333;
+      font-weight: bold;
+      line-height: 44rpx;
+    }
+
+    .excerpt {
+      margin-top: 10rpx;
+      .excerpt-text {
+        font-size: 24rpx;
+        color: #888888;
+        line-height: 34rpx;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+        overflow: hidden;
+      }
+    }
+
+    .tags {
+      margin-top: 10rpx;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8rpx;
+      
+      .tag {
+        background-color: #f8f8f8;
+        border: 1rpx solid #e0e0e0;
+        border-radius: 20rpx;
+        padding: 4rpx 12rpx;
+        font-size: 20rpx;
+        color: #666666;
+      }
     }
 
     .thumbnails {

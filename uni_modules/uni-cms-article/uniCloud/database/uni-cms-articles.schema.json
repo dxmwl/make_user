@@ -167,6 +167,12 @@
 		"preview_expired": {
 			"bsonType": "timestamp",
 			"description": "文章预览过期时间"
+		},
+		"tags": {
+			"bsonType": "array",
+			"title": "标签",
+			"description": "文章标签",
+			"defaultValue": []
 		}
 	}
 }

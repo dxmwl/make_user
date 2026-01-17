@@ -10,6 +10,12 @@
         <view>
           <text class="title">{{ data.title }}</text>
         </view>
+        <view v-if="data.excerpt" class="excerpt">
+          <text class="excerpt-text">{{ data.excerpt }}</text>
+        </view>
+        <view v-if="data.tags && data.tags.length > 0" class="tags">
+          <text v-for="(tag, index) in data.tags" :key="index" class="tag">{{ tag }}</text>
+        </view>
         <view class="info">
           <text class="author">{{ data.user_id[0] ? data.user_id[0].nickname : '' }}</text>
           <text class="publish_date">{{ publishTime(data.publish_date) }}</text>

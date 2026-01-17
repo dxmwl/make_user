@@ -24,7 +24,7 @@
 			"path": "uni_modules/uni-cms-article/pages/detail/detail",
 			"style": {
 				"backgroundColor": "#FFFFFF",
-					"navigationStyle": "custom"
+				"navigationStyle": "custom"
 			}
 		},
 		{
