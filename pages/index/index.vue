@@ -685,6 +685,14 @@
 		gap: 40rpx; /* 在各元素间添加间距 */
 	}
 	
+	/* 桌面端样式调整 */
+	@media screen and (min-width: 768px) {
+		.header-content {
+			width: 60%; /* PC端改为60%宽度，参考记忆配置 */
+			padding: 15rpx 50rpx;
+		}
+	}
+	
 	.logo-section {
 		display: flex;
 		align-items: center;
@@ -888,6 +896,13 @@
 		justify-content: center;
 	}
 	
+	/* 桌面端样式调整 */
+	@media screen and (min-width: 768px) {
+		.category-scroll {
+			width: 60%; /* PC端改为60%宽度，参考记忆配置 */
+		}
+	}
+	
 	.category-item {
 		display: inline-block;
 		padding: 15rpx 30rpx;
@@ -920,6 +935,13 @@
 		margin: 0 auto; /* 居中显示 */
 		display: flex;
 		gap: 30rpx;
+	}
+	
+	/* 桌面端样式调整 */
+	@media screen and (min-width: 768px) {
+		.container {
+			width: 60%; /* PC端改为60%宽度，参考记忆配置 */
+		}
 	}
 	
 	.blog-posts {
@@ -1071,6 +1093,13 @@
 		align-items: center;
 		gap: 15rpx;
 		flex-wrap: wrap;
+	}
+	
+	/* 桌面端样式调整 */
+	@media screen and (min-width: 768px) {
+		.footer-content {
+			width: 60%; /* PC端改为60%宽度，参考记忆配置 */
+		}
 	}
 	
 	.copyright {

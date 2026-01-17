@@ -3,11 +3,22 @@
   <head>
     <meta charset="UTF-8" />
     <script>
+      // 根据设备类型设置不同的viewport
+      var isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
       var coverSupport = 'CSS' in window && typeof CSS.supports === 'function' && (CSS.supports('top: env(a)') ||
         CSS.supports('top: constant(a)'))
-      document.write(
-        '<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0' +
-        (coverSupport ? ', viewport-fit=cover' : '') + '" />')
+      
+      if(isMobile) {
+        // 移动设备使用设备宽度
+        document.write(
+          '<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0' +
+          (coverSupport ? ', viewport-fit=cover' : '') + '" />')
+      } else {
+        // PC端移除或放宽缩放限制，允许用户缩放
+        document.write(
+          '<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes' +
+          (coverSupport ? ', viewport-fit=cover' : '') + '" />')
+      }
     </script>
     <title>码客——程序员交流社区</title>
     <meta name="keywords" content="程序员,编程,技术交流,开发者社区,代码分享,编程学习,技术博客,开发资源">
