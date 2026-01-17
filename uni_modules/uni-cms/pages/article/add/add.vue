@@ -314,12 +314,32 @@
 				this.$refs.form.validate().then((res) => {
 					this.editorCtx.getContents({
 						success: (e) => {
+							// 如果摘要为空，则从内容中提取前120个字符作为摘要
+							let excerpt = this.formData.excerpt;
+							if (!excerpt || excerpt.trim().length === 0) {
+								// 将编辑器内容转换为纯文本
+								let textContent = '';
+								if (e.delta && e.delta.ops) {
+									e.delta.ops.forEach(op => {
+										if (op.insert) {
+											if (typeof op.insert === 'string') {
+												textContent += op.insert;
+											} else if (op.insert.text) {
+												textContent += op.insert.text;
+											}
+										}
+									});
+								}
+								// 截取前120个字符作为摘要
+								excerpt = textContent.substring(0, 120);
+							}
 							// 提交表单
 							this.submitForm({
 								...res,
 								thumbnail: this.formData.thumbnail.map(thumb => thumb.source),
 								article_status: status,
 								title: this.formData.title.trim(),
+								excerpt: excerpt,
 								content: e.delta,
 								publish_date: Date.now()
 							})
