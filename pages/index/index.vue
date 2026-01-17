@@ -227,7 +227,7 @@
 				}
 						
 				return [
-					db.collection(articleDBName).where(whereCondition).field('thumbnail,title,publish_date,user_id,category_id,excerpt,tags').getTemp(), // 文章集合
+					db.collection(articleDBName).where(whereCondition).field('thumbnail,title,publish_date,user_id,category_id,excerpt,tags,view_count').getTemp(), // 文章集合
 					db.collection(userDBName).field('_id,nickname').getTemp() // 用户集合
 				]
 			},

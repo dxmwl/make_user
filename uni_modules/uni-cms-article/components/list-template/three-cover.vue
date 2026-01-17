@@ -25,6 +25,7 @@
         <view class="info">
           <text class="author">{{ data.user_id[0] ? data.user_id[0].nickname : '' }}</text>
           <text class="publish_date">{{ publishTime(data.publish_date) }}</text>
+          <text v-if="data.view_count !== undefined" class="view-count">浏览 {{ data.view_count }}</text>
         </view>
       </view>
     </template>

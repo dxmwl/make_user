@@ -75,12 +75,14 @@
     }
 
     .author,
-    .publish_date {
+    .publish_date,
+    .view-count {
       font-size: 24rpx;
       color: #bbbbbb;
     }
 
-    .publish_date {
+    .publish_date,
+    .view-count {
       margin-left: 14rpx;
     }
   }
