@@ -18,6 +18,9 @@ const validator = {
     "category_id": {
         "rules": [
             {
+                "required": true
+            },
+            {
                 "format": "string"
             }
         ],

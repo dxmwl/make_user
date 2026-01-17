@@ -594,6 +594,7 @@ export default {
           this.editorCtx.insertMediaVideo(value)
           // #endif
           break
+
         default:
           this.editorCtx.format(name, value)
           break
@@ -856,6 +857,25 @@ export default {
       color: #ff502c;
       padding: 0.065em 0.4em;
       font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+    }
+
+    pre {
+      background-color: #f8f8f8;
+      border-radius: 4px;
+      padding: 12px;
+      overflow-x: auto;
+      font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+      margin: 10px 0;
+    }
+
+    .ql-syntax {
+      background-color: #f8f8f8;
+      border-radius: 4px;
+      padding: 12px;
+      overflow-x: auto;
+      font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+      margin: 10px 0;
+      border: 1px solid #eaeaea;
     }
   }
 

@@ -40,10 +40,10 @@
 							<text>为了保证最佳效果展示；请上传16:9的封面图片</text>
 						</view>
 					</uni-forms-item>
-					<uni-forms-item name="user_id" label="作者" required>
+					<!-- <uni-forms-item name="user_id" label="作者" required>
 						<text>{{ currentUserNickname }}</text>
-					</uni-forms-item>
-					<uni-forms-item name="category_id" label="分类">
+					</uni-forms-item> -->
+					<uni-forms-item name="category_id" label="分类" required>
 						<uni-data-picker v-model="formData.category_id" style="width: 200px;"
 							collection="uni-cms-categories" field="name as text, _id as value"></uni-data-picker>
 					</uni-forms-item>
@@ -73,10 +73,7 @@
 					<!--															 :localdata="formOptions.comment_status_localdata"></uni-data-checkbox>-->
 					<!--					</uni-forms-item>-->
 				</view>
-				<view class="uni-button-group m" style="padding-bottom: 50px; display: flex; justify-content: center; gap: 10px;">
-					<button class="uni-button" style="width: 100px;" @click="submit(0)">存为草稿</button>
-					<button type="primary" class="uni-button" style="width: 100px;" @click="submit(1)">发布</button>
-				</view>
+
 			</view>
 		</uni-forms>
 		<view class="footer">
@@ -340,6 +337,7 @@
 								article_status: status,
 								title: this.formData.title.trim(),
 								excerpt: excerpt,
+								tags: this.formData.tags || [],
 								content: e.delta,
 								publish_date: Date.now()
 							})

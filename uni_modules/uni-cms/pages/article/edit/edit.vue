@@ -444,7 +444,10 @@ export default {
 		 */
 		submitForm(value) {
 			// 确保tags字段被包含在提交的数据中
-			value.tags = this.formData.tags || [];
+			value = {
+				...value,
+				tags: this.formData.tags || []
+			};
 			
 			uni.showLoading({
 				mask: true
