@@ -1,23 +1,9 @@
 <template>
 	<view class="blog-home">
-		<Header 
-			:active-tab="activeTab"
-			:is-logged-in="isLoggedIn"
-			:user-info="userInfo"
-			:show-user-menu="showUserMenu"
-			@switchTab="switchTab"
-			@goToSearchPage="goToSearchPage"
-			@goToPublishArticle="goToPublishArticle"
-			@toggleUserMenu="toggleUserMenu"
-			@goToLogin="goToLogin"
-			@goToRegister="goToRegister"
-			@goToUserProfile="goToUserProfile"
-			@logout="logout"
-			@closeUserMenu="closeUserMenu"
-		/>
+		<TopNavBar />
 		
 		<!-- 分类导航 -->
-		<view class="category-nav" v-if="activeTab === 'home'">
+		<view class="category-nav">
 			<scroll-view scroll-x="true" class="category-scroll">
 				<view class="category-item" 
 					v-for="(category, index) in categoriesList" 
@@ -32,157 +18,83 @@
 		<!-- 主要内容区域 -->
 		<view class="main-container">
 			<view class="container">
-				<!-- 首页内容 - 条件渲染 -->
-				<view v-if="activeTab === 'home'">
-					<div class="home-main-sidebar-container">
-						<!-- 博客文章列表 -->
-						<view class="blog-posts">
-							<!-- 使用 uni-cms-article 提供的标准列表组件 -->
-							<!-- #ifndef APP-NVUE -->
-							<scroll-view
-								scroll-y
-								class="uni-list"
-								refresher-enabled
-								@refresherrefresh="refresh"
-								@scrolltolower="loadMore"
-							>
-								<template v-for="item in articles">
-									<not-cover v-if="item.thumbnail && item.thumbnail.length === 0" :data="item" ></not-cover>
-									<right-small-cover v-else-if="item.thumbnail && item.thumbnail.length === 1"
-										:data="item" ></right-small-cover>
-									<three-cover v-else-if="item.thumbnail && item.thumbnail.length >= 3"
-										:data="item" ></three-cover>
-								</template>
-								<!-- 加载状态 -->
-								<uni-load-state @networkResume="refresh"
-									:state="{ data: articles, hasMore, loading, error: null }"
-									@clickLoadMore="loadMore">
-								</uni-load-state>
-							</scroll-view>
-							<!-- #endif -->
-							<!-- #ifdef APP-NVUE -->
-							<list class="uni-list" :border="false">
-								<refresh-box :loading="loading" @refresh="refresh"></refresh-box>
-								<template v-for="item in articles">
-									<not-cover v-if="item.thumbnail && item.thumbnail.length === 0" :data="item" ></not-cover>
-									<right-small-cover v-else-if="item.thumbnail && item.thumbnail.length === 1"
-										:data="item" ></right-small-cover>
-									<three-cover v-else-if="item.thumbnail && item.thumbnail.length >= 3"
-										:data="item" ></three-cover>
-								</template>
-								<uni-load-state @networkResume="refresh"
-									:state="{ data: articles, hasMore, loading, error: null }"
-									@clickLoadMore="loadMore">
-								</uni-load-state>
-							</list>
-							<!-- #endif -->
+				<!-- 首页内容 -->
+				<div class="home-main-sidebar-container">
+					<!-- 侧边栏 -->
+					<view class="sidebar">
+						<!-- 热门文章 -->
+						<view class="widget">
+							<h3 class="widget-title">热门文章</h3>
+							<view class="popular-post" v-for="(popular, index) in popularPosts" :key="index">
+							<text class="popular-title" @click="goToArticleDetail(popular._id)">{{ popular.title }}</text>
+							<text class="popular-date">{{ publishTime(popular.publish_date) }}</text>
+							</view>
 						</view>
 						
-						<!-- 侧边栏 -->
-						<view class="sidebar">
-							<!-- 热门文章 -->
-							<view class="widget">
-								<h3 class="widget-title">热门文章</h3>
-								<view class="popular-post" v-for="(popular, index) in popularPosts" :key="index">
-								<text class="popular-title" @click="goToArticleDetail(popular._id)">{{ popular.title }}</text>
-								<text class="popular-date">{{ publishTime(popular.publish_date) }}</text>
-								</view>
-							</view>
-							
-							<!-- 分类 -->
-							<view class="widget">
-								<h3 class="widget-title">分类</h3>
-								<view class="categories">
-									<text class="category" :class="{ active: activeCategory === 'all' }" @click="filterByCategory('all')">全部 ({{ getAllCategoryCount() }})</text>
-								<text class="category" v-for="(cat, index) in categoriesList.filter(c => c._id !== 'all')" :key="cat._id" :class="{ active: activeCategory === cat._id }" @click="filterByCategory(cat._id)">
+						<!-- 分类 -->
+						<view class="widget">
+							<h3 class="widget-title">分类</h3>
+							<view class="categories">
+								<text class="category" v-for="(cat, index) in categoriesList" :key="cat._id" :class="{ active: activeCategory === cat._id }" @click="filterByCategory(cat._id)">
 									{{ cat.name }} ({{ cat.count || 0 }})
 								</text>
-								</view>
-							</view>
-							
-							<!-- 标签云 -->
-							<view class="widget">
-								<h3 class="widget-title">标签云</h3>
-							<view class="tags-cloud">
-								<text class="tag-item" v-for="(tag, index) in tags" :key="index" @click="filterByTag(tag)">
-									{{ tag }}
-								</text>
-							</view>
 							</view>
 						</view>
-					</div>
-				</view>
-				
-				<!-- 交流圈内容 - 条件渲染 -->
-				<view v-if="activeTab === 'circle'" class="circle-content">
-					<!-- 交流圈分类导航 -->
-					<view class="category-nav">
-						<scroll-view scroll-x="true" class="category-scroll">
-							<view class="category-item" 
-								v-for="(category, index) in circleCategoriesList" 
-								:key="category._id"
-								:class="{ active: activeCircleCategory === category._id }"
-								@click="changeCircleCategory(category._id)">
-								<text>{{ category.name }}</text>
-							</view>
-							<view class="category-item" 
-								:class="{ active: activeCircleCategory === 'all' }"
-								@click="changeCircleCategory('all')">
-								<text>全部</text>
-							</view>
+						
+						<!-- 标签云 -->
+						<view class="widget">
+							<h3 class="widget-title">标签云</h3>
+						<view class="tags-cloud">
+							<text class="tag-item" v-for="(tag, index) in tags" :key="index" @click="filterByTag(tag)">
+								{{ tag }}
+							</text>
+						</view>
+						</view>
+					</view>
+					<!-- 博客文章列表 -->
+					<view class="blog-posts">
+						<!-- 使用 uni-cms-article 提供的标准列表组件 -->
+						<!-- #ifndef APP-NVUE -->
+						<scroll-view
+							scroll-y
+							class="uni-list"
+							refresher-enabled
+							@refresherrefresh="refresh"
+							@scrolltolower="loadMore"
+						>
+							<template v-for="item in articles">
+								<not-cover v-if="item.thumbnail && item.thumbnail.length === 0" :data="item" ></not-cover>
+								<right-small-cover v-else-if="item.thumbnail && item.thumbnail.length === 1"
+									:data="item" ></right-small-cover>
+								<three-cover v-else-if="item.thumbnail && item.thumbnail.length >= 3"
+									:data="item" ></three-cover>
+							</template>
+							<!-- 加载状态 -->
+							<uni-load-state @networkResume="refresh"
+								:state="{ data: articles, hasMore, loading, error: null }"
+								@clickLoadMore="loadMore">
+							</uni-load-state>
 						</scroll-view>
+						<!-- #endif -->
+						<!-- #ifdef APP-NVUE -->
+						<list class="uni-list" :border="false">
+							<refresh-box :loading="loading" @refresh="refresh"></refresh-box>
+							<template v-for="item in articles">
+								<not-cover v-if="item.thumbnail && item.thumbnail.length === 0" :data="item" ></not-cover>
+								<right-small-cover v-else-if="item.thumbnail && item.thumbnail.length === 1"
+									:data="item" ></right-small-cover>
+								<three-cover v-else-if="item.thumbnail && item.thumbnail.length >= 3"
+									:data="item" ></three-cover>
+							</template>
+							<uni-load-state @networkResume="refresh"
+								:state="{ data: articles, hasMore, loading, error: null }"
+								@clickLoadMore="loadMore">
+							</uni-load-state>
+						</list>
+						<!-- #endif -->
 					</view>
 					
-					<!-- 交流圈列表 -->
-					<view class="circle-list">
-						<view class="circle-item" v-for="(item, index) in circleList" :key="item._id" @click="goToCircleDetail(item._id)">
-							<view class="circle-header">
-								<image class="avatar" :src="item.author_avatar || '/static/logo.png'" mode="aspectFill"></image>
-								<view class="user-info">
-									<text class="nickname">{{ item.author_nickname }}</text>
-									<text class="time">{{ formatTime(item.create_time) }}</text>
-								</view>
-							</view>
-							<view class="circle-body">
-								<text class="title">{{ item.title }}</text>
-								<text class="description">{{ item.description }}</text>
-							</view>
-							<view class="circle-footer">
-								<view class="group-info">
-									<text class="qq-group" v-if="item.qq_group">QQ群: {{ item.qq_group }}</text>
-									<text class="wx-group" v-if="item.wx_group">微信群: {{ item.wx_group }}</text>
-								</view>
-							</view>
-						</view>
-					</view>
-				</view>
-				
-				<!-- 关于页面内容 - 条件渲染 -->
-				<view v-if="activeTab === 'about'" class="about-content">
-					<view class="about-container">
-						<view class="about-card">
-							<image class="logo" src="/static/logo.png" mode="aspectFit"></image>
-							<text class="app-name">码客——程序员交流社区</text>
-							<text class="version">版本: v1.0.0</text>
-							
-							<view class="about-section">
-								<text class="section-title">关于我们</text>
-								<text class="section-content">码客是一个专注于程序员技术交流的社区平台，致力于为开发者提供一个分享知识、解决问题、共同成长的空间。</text>
-							</view>
-							
-							<view class="about-section">
-								<text class="section-title">联系我们</text>
-								<text class="section-content">邮箱: contact@makemoney.com</text>
-								<text class="section-content">QQ群: 123456789</text>
-							</view>
-							
-							<view class="about-section">
-								<text class="section-title">免责声明</text>
-								<text class="section-content">本平台仅供学习交流使用，我们不保证内容的准确性，用户在使用过程中产生的风险由用户自行承担。</text>
-							</view>
-						</view>
-					</view>
-				</view>
+				</div>
 			</view>
 		</view>
 		
@@ -198,7 +110,7 @@
 	import rightSmallCover from '@/uni_modules/uni-cms-article/components/list-template/right-small-cover.vue';
 	import threeCover from '@/uni_modules/uni-cms-article/components/list-template/three-cover.vue';
 	import refreshBox from '@/uni_modules/uni-cms-article/components/refresh-box/refreshBox.nvue';
-	import Header from '@/pages/components/Header.vue';
+	import TopNavBar from '@/components/TopNavBar.vue';
 	import Footer from '@/pages/components/Footer.vue';
 	
 
@@ -208,14 +120,14 @@
 			rightSmallCover,
 			threeCover,
 			refreshBox,
-			Header,
+			TopNavBar,
 			Footer
 		},
 		data() {
 			return {
 				where: '"article_status" == 1', // 查询条件
 				activeCategory: 'all', // 当前选中的分类ID
-				categoriesList: [], // 分类列表，从云函数获取
+				categoriesList: [{ _id: 'all', name: '全部', count: 0 }], // 分类列表，初始化时只包含全部分类，从云函数获取后更新
 				totalCount: 0, // 总文章数
 				popularPosts: [], // 热门文章列表，通过云函数动态加载
 				articles: [], // 文章列表
@@ -244,29 +156,17 @@
 				tags: [], // 标签云数据，通过云函数动态加载
 				isLoggedIn: false, // 是否已登录
 				userInfo: {}, // 用户信息
-				showUserMenu: false, // 是否显示用户菜单
-				activeTab: 'home', // 当前激活的标签页
-				activeCircleCategory: 'all', // 当前选中的交流圈分类
-				circleCategoriesList: [], // 交流圈分类列表
-				circleList: [] // 交流圈列表
+				// 顶部导航栏由独立组件处理，此处不需要相关状态
+				// 以下变量不再需要，保留以防其他地方使用
+				// showUserMenu: false, // 是否显示用户菜单
+				// activeTab: 'home', // 当前激活的标签页
+				// activeCircleCategory: 'all', // 当前选中的交流圈分类
+				// circleCategoriesList: [], // 交流圈分类列表
+				// circleList: [] // 交流圈列表
 			}
 		},
 
 		computed: {
-			// 连表查询，返回两个集合的查询结果
-			colList() {
-				// 根据选中的分类构建查询条件
-				let whereCondition = this.where;
-				if (this.activeCategory !== 'all') {
-					whereCondition += ` && category_id == '${this.activeCategory}'`;
-				}
-						
-				return [
-					db.collection(articleDBName).where(whereCondition).field('thumbnail,title,publish_date,user_id,category_id,excerpt,tags,view_count').getTemp(), // 文章集合
-					db.collection(userDBName).field('_id,nickname').getTemp() // 用户集合
-				]
-			},
-			
 
 		},
 		onLoad() {
@@ -315,9 +215,15 @@
 			async loadArticles() {
 				try {
 					this.loading = true;
+					// 打印参数信息以便调试
+					console.log('调用get-article-list云函数，参数:', {
+						category_id: this.activeCategory,
+						page: this.currentPage,
+						pageSize: this.pageSize
+					});
 					const result = await uniCloud.callFunction({
 						name: 'get-article-list',
-						params: {
+						data: {
 							category_id: this.activeCategory,
 							page: this.currentPage,
 							pageSize: this.pageSize
@@ -414,45 +320,53 @@
 																	
 					// 计算所有分类的总数作为全部分类的计数（使用云函数返回的count值）
 					const allCategoriesCount = fetchedCategories.reduce((sum, category) => sum + (category.count || 0), 0);
-					const allCategory = { _id: 'all', name: '全部', count: allCategoriesCount };
-					this.categoriesList = [allCategory, ...fetchedCategories];
+					// 更新'全部'分类的计数
+					const allCategoryIndex = this.categoriesList.findIndex(cat => cat._id === 'all');
+					if (allCategoryIndex !== -1) {
+						this.categoriesList[allCategoryIndex].count = allCategoriesCount;
+					} else {
+						// 如果没有找到'全部'分类，则添加它
+						this.categoriesList.unshift({ _id: 'all', name: '全部', count: allCategoriesCount });
+					}
+					// 添加获取到的其他分类
+					fetchedCategories.forEach(fetchedCat => {
+						const existingIndex = this.categoriesList.findIndex(cat => cat._id === fetchedCat._id);
+						if (existingIndex === -1) {
+							// 如果分类不存在，则添加
+							this.categoriesList.push(fetchedCat);
+						} else {
+							// 如果分类已存在，则更新其信息
+							this.categoriesList[existingIndex] = fetchedCat;
+						}
+					});
 					console.log('最终分类列表:', this.categoriesList);
 								
 					// 如果分类列表为空或只有全部分类，至少确保有"全部"分类
 					if (this.categoriesList.length <= 1) {
 						// 计算其他分类的总数作为全部分类的计数
 						const otherCategoriesCount = Array.isArray(fetchedCategories) ? fetchedCategories.reduce((sum, category) => sum + (category.count || 0), 0) : 0;
-						const fallbackCategories = [
-							{ _id: 'all', name: '全部', count: otherCategoriesCount },
-							{ _id: 'frontend', name: '前端开发', count: 0 },
-							{ _id: 'backend', name: '后端开发', count: 0 },
-							{ _id: 'mobile', name: '移动端', count: 0 },
-							{ _id: 'ai', name: '人工智能', count: 0 },
-							{ _id: 'cloud', name: '云计算', count: 0 }
-						];
-						this.categoriesList = fallbackCategories;
+						// 更新'全部'分类的计数，而不是替换整个数组
+						const allCategoryIndex = this.categoriesList.findIndex(cat => cat._id === 'all');
+						if (allCategoryIndex !== -1) {
+							this.categoriesList[allCategoryIndex].count = otherCategoriesCount;
+						}
 					}
 				} catch (e) {
 					console.error('加载分类列表失败', e);
-					// 如果加载失败，提供"全部"分类和其他默认分类作为后备
-					const fallbackCategories = [
-						{ _id: 'all', name: '全部', count: 0 },
-						{ _id: 'frontend', name: '前端开发', count: 0 },
-						{ _id: 'backend', name: '后端开发', count: 0 },
-						{ _id: 'mobile', name: '移动端', count: 0 },
-						{ _id: 'ai', name: '人工智能', count: 0 },
-						{ _id: 'cloud', name: '云计算', count: 0 }
-					];
-					this.categoriesList = fallbackCategories;
+					// 如果加载失败，只确保'全部'分类存在，不替换整个数组
+					const allCategoryIndex = this.categoriesList.findIndex(cat => cat._id === 'all');
+					if (allCategoryIndex === -1) {
+						// 如果没有'全部'分类，则添加它
+						this.categoriesList.push({ _id: 'all', name: '全部', count: 0 });
+					}
 				}
 								
 				// 获取文章总数
 				this.getTotalCount();
 								
-				// 在分类加载完成后，如果还没有文章数据或当前分类无效，则加载全部分类的文章
+				// 在分类加载完成后，只在初始化阶段（即当前仍为默认分类）且没有文章数据时，加载全部分类的文章
 				const categoryExists = this.categoriesList.some(cat => cat._id === this.activeCategory);
-				if (this.articles.length === 0 || !categoryExists) {
-					this.activeCategory = 'all';
+				if ((this.articles.length === 0 || !categoryExists) && this.activeCategory === 'all') {
 					this.loadArticles();
 				}
 				
@@ -698,7 +612,20 @@
 					plus.runtime.openWeb(url);
 				}
 			},
-			
+			// 跳转到首页
+			goToIndexPage() {
+				uni.switchTab({
+					url: '/pages/index/index'
+				});
+			},
+			// 跳转到发布文章页面
+			goToPublishArticle() {
+				// 检查用户是否具有发布文章的权限
+				// 可以根据用户的角色来判断，例如只有管理员或特定角色才能发布文章
+				uni.navigateTo({
+					url: '/uni_modules/uni-cms/pages/article/add/add'
+				});
+			},
 			// 跳转到用户个人资料页
 			goToUserProfile() {
 				uni.navigateTo({
@@ -752,165 +679,7 @@
 					this.userInfo = {};
 				}
 			},
-			// 切换用户菜单显示
-			toggleUserMenu() {
-				this.showUserMenu = !this.showUserMenu;
-			},
-			// 关闭用户菜单
-			closeUserMenu() {
-				this.showUserMenu = false;
-			},
-			// 退出登录
-			async logout() {
-				if (this.$uniIdPagesStore && this.$uniIdPagesStore.mutations) {
-					// 手动清除登录状态，避免页面跳转
-					const uniIdCo = uniCloud.importObject("uni-id-co");
-					try {
-						// 尝试调用服务端的logout
-						if(uniCloud.getCurrentUserInfo().tokenExpired > Date.now()){
-							await uniIdCo.logout();
-						}
-					} catch(e) {
-						console.error(e);
-					}
-					
-					// 清除本地存储的token
-					uni.removeStorageSync('uni_id_token');
-					uni.setStorageSync('uni_id_token_expired', 0);
-					
-					// 发送登出事件通知其他组件更新状态
-					uni.$emit('uni-id-pages-logout');
-					
-					// 清除用户信息
-					this.$uniIdPagesStore.mutations.setUserInfo({}, {cover: true});
-					
-				} else {
-					// 如果没有$uniIdPagesStore，则手动清除
-					uni.removeStorageSync('uni_id_token');
-					uni.removeStorageSync('uni_id_token_expired');
-				}
-				
-				// 更新本地状态
-				this.isLoggedIn = false;
-				this.userInfo = {};
-				this.showUserMenu = false;
-				// 不需要跳转页面，只需更新状态
-			},
-			// 跳转到首页
-			goToIndexPage() {
-				uni.switchTab({
-					url: '/pages/index/index'
-				});
-			},
-			// 跳转到交流圈列表
-			goToCircleList() {
-				uni.navigateTo({
-					url: '/pages/circle/list'
-				});
-			},
-			// 跳转到发布文章页面
-			goToPublishArticle() {
-				// 检查用户是否具有发布文章的权限
-				// 可以根据用户的角色来判断，例如只有管理员或特定角色才能发布文章
-				uni.navigateTo({
-					url: '/uni_modules/uni-cms/pages/article/add/add'
-				});
-			},
-			// 切换交流圈分类
-			changeCircleCategory(categoryId) {
-				this.activeCircleCategory = categoryId;
-				// 可以在这里添加按分类筛选交流圈的逻辑
-			},
-			// 跳转到交流圈详情页
-			goToCircleDetail(circleId) {
-				uni.navigateTo({
-					url: `/pages/circle/detail?id=${circleId}`
-				});
-			},
-			// 切换标签页
-			switchTab(tabName) {
-				this.activeTab = tabName;
-				// 根据标签加载对应的数据
-				if (tabName === 'circle' && this.circleList.length === 0) {
-					this.loadCircleData();
-				}
-			},
-			// 切换交流圈分类
-			changeCircleCategory(categoryId) {
-				this.activeCircleCategory = categoryId;
-				// 可以在这里添加按分类筛选交流圈的逻辑
-			},
-			// 跳转到交流圈详情页
-			goToCircleDetail(circleId) {
-				uni.navigateTo({
-					url: `/pages/circle/detail?id=${circleId}`
-				});
-			},
-			// 加载交流圈数据
-			async loadCircleData() {
-				try {
-					// 加载交流圈分类
-					const categoryResult = await uniCloud.callFunction({
-						name: 'get-circle-category-list'
-					});
-					if(categoryResult && categoryResult.result && categoryResult.result.code === 0) {
-						this.circleCategoriesList = categoryResult.result.data || [];
-					}
-					
-					// 加载交流圈列表
-					const circleResult = await uniCloud.callFunction({
-						name: 'get-circle-list'
-					});
-					if(circleResult && circleResult.result && circleResult.result.code === 0) {
-						this.circleList = circleResult.result.data || [];
-					}
-				} catch (error) {
-					console.error('加载交流圈数据失败:', error);
-					// 使用静态数据作为后备
-					this.circleList = [
-						{
-							_id: '1',
-							title: '前端技术交流群',
-							description: '这是一个前端技术交流群，主要讨论JavaScript、Vue、React等前端技术。',
-							qq_group: '123456789',
-							wx_group: 'frontend_group',
-							author_nickname: '前端小明',
-							author_avatar: '/static/logo.png',
-							create_time: Date.now()
-						},
-						{
-							_id: '2',
-							title: '后端技术交流群',
-							description: '这是一个后端技术交流群，主要讨论Java、Python、Node.js等后端技术。',
-							qq_group: '987654321',
-							wx_group: 'backend_group',
-							author_nickname: '后端小李',
-							author_avatar: '/static/logo.png',
-							create_time: Date.now()
-						}
-					];
-				}
-			},
-			// 格式化时间
-			formatTime(time) {
-				if (!time) return '';
-				const date = new Date(time);
-				const now = new Date();
-				const diffMs = now - date;
-				const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-				const diffHours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-				const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-				
-				if (diffDays > 0) {
-					return `${diffDays}天前`;
-				} else if (diffHours > 0) {
-					return `${diffHours}小时前`;
-				} else if (diffMinutes > 0) {
-					return `${diffMinutes}分钟前`;
-				} else {
-					return '刚刚';
-				}
-			}
+
 		}
 	}
 </script>
@@ -1304,13 +1073,13 @@
 		gap: 10rpx;
 	}
 	
-	.Category {
+	.category {
 		font-size: 26rpx;
 		color: #2c3e50;
 		padding: 10rpx 0;
 	}
 	
-	.Category:hover {
+	.category:hover {
 		color: #3498db;
 	}
 	

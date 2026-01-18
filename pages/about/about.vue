@@ -1,13 +1,6 @@
 <template>
 	<view class="about-page">
-		<view class="header">
-			<view class="header-content">
-				<view class="logo-section">
-					<image class="logo" src="/static/logo.png" mode="aspectFit"></image>
-					<text class="site-name">码客——程序员交流社区</text>
-				</view>
-			</view>
-		</view>
+		<TopNavBar />
 		
 		<view class="main-content">
 			<view class="container">
@@ -33,28 +26,19 @@
 			</view>
 		</view>
 		
-		<view class="footer">
-			<view class="footer-content">
-				<text class="copyright">© 2026 码客——程序员交流社区</text>
-				<view class="beian-info">
-					<text class="beian-text" @click="openBeianLink('miit')">豫ICP备2023000435号-1</text>
-					<text class="beian-text" @click="openBeianLink('gongan')">豫公网安备41040202000218号</text>
-					<text class="company">河南点线面网络科技有限公司</text>
-				</view>
-			</view>
-			
-			<!-- 友情链接 -->
-			<view class="friend-links">
-				<text class="friend-link-title">友情链接：</text>
-				<a class="friend-link" href="https://www.dxmwl.com" @click="openFriendLink('https://www.dxmwl.com')" target="_blank">点线面网络</a>
-				<a class="friend-link" href="https://official.youkeyun.dxmwl.com" @click="openFriendLink('https://official.youkeyun.dxmwl.com')" target="_blank">友客云</a>
-			</view>
-		</view>
+		<Footer />
 	</view>
 </template>
 
 <script>
+import TopNavBar from '@/components/TopNavBar.vue';
+import Footer from '@/pages/components/Footer.vue';
+
 export default {
+	components: {
+		TopNavBar,
+		Footer
+	},
 	data() {
 		return {};
 	},
@@ -98,44 +82,7 @@ export default {
 	flex-direction: column;
 }
 
-.header {
-	background: #fff;
-	box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.1);
-	position: sticky;
-	top: 0;
-	z-index: 1000;
-	padding: 15rpx 0;
-}
-
-.header-content {
-	width: 80%;
-	max-width: none;
-	margin: 0 auto;
-	padding: 10rpx 40rpx;
-	display: flex;
-	justify-content: flex-start;
-	align-items: center;
-	gap: 40rpx;
-}
-
-.logo-section {
-	display: flex;
-	align-items: center;
-	flex: 1;
-}
-
-.logo {
-	width: 100rpx;
-	height: 100rpx;
-	margin-right: 20rpx;
-	border-radius: 50%;
-}
-
-.site-name {
-	font-size: 40rpx;
-	font-weight: bold;
-	color: #2c3e50;
-}
+/* 原来的header样式已由TopNavBar组件处理 */
 
 .main-content {
 	flex: 1;
@@ -210,103 +157,11 @@ export default {
 	color: #3498db;
 }
 
-.footer {
-	text-align: center;
-	padding: 30rpx 0 10rpx 0;
-	background: #2c3e50;
-	color: #ecf0f1;
-	font-size: 24rpx;
-	margin-top: auto;
-}
-
-.footer-content {
-	width: 80%;
-	margin: 0 auto;
-	display: flex;
-	flex-direction: row;
-	justify-content: space-between;
-	align-items: center;
-	gap: 15rpx;
-	flex-wrap: wrap;
-}
-
-.copyright {
-	flex: 1;
-	text-align: left;
-}
-
-.beian-info {
-	display: flex;
-	flex-direction: row;
-	align-items: center;
-	gap: 20rpx;
-	font-size: 22rpx;
-	flex: 2;
-	justify-content: center;
-}
-
-.beian-text {
-	display: inline-block;
-	line-height: 1.5;
-	color: #bdc3c7;
-	text-decoration: underline;
-	cursor: pointer;
-}
-
-.beian-text:hover {
-	color: #ecf0f1;
-}
-
-.company {
-	flex: 1;
-	text-align: right;
-	display: block;
-	line-height: 1.5;
-	font-size: 20rpx;
-	color: #95a5a6;
-}
-
-.friend-links {
-	width: 80%;
-	margin: 10rpx auto 0;
-	padding: 15rpx 0;
-	border-top: 1rpx solid #34495e;
-	display: flex;
-	flex-wrap: wrap;
-	justify-content: center;
-	gap: 20rpx;
-	font-size: 24rpx;
-}
-
-.friend-link-title {
-	color: #bdc3c7;
-	font-weight: normal;
-	margin-right: 15rpx;
-}
-
-.friend-link {
-	color: #3498db;
-	text-decoration: underline;
-	cursor: pointer;
-	transition: color 0.3s;
-}
-
-.friend-link:hover {
-	color: #5dade2;
-}
+/* 原来的footer样式已由Footer组件处理 */
 
 /* 响应式设计 */
 @media (max-width: 768px) {
-	.header-content {
-		flex-direction: column;
-		gap: 20rpx;
-		padding: 20rpx;
-		width: 90%;
-	}
-	
-	.logo-section {
-		justify-content: center;
-	}
+	/* 原来的header样式已由TopNavBar组件处理 */
 	
 	.container {
 		width: 90%;
@@ -340,39 +195,6 @@ export default {
 		margin-bottom: 5rpx;
 	}
 	
-	.footer-content {
-		width: 90%;
-		flex-direction: column;
-		gap: 10rpx;
-	}
-	
-	.copyright {
-		text-align: center;
-	}
-	
-	.beian-info {
-		flex-direction: column;
-		gap: 8rpx;
-	}
-	
-	.company {
-		text-align: center;
-	}
-	
-	.friend-links {
-		width: 90%;
-		flex-direction: column;
-		align-items: center;
-		gap: 10rpx;
-	}
-	
-	.friend-link-title {
-		margin-right: 0;
-		margin-bottom: 10rpx;
-	}
-	
-	.friend-link {
-		margin: 0 10rpx;
-	}
+	/* 原来的footer响应式样式已由Footer组件处理 */
 }
 </style>

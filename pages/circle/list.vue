@@ -1,20 +1,6 @@
 <template>
 	<view class="circle-list">
-		<Header 
-			:active-tab="'circle'"
-			:is-logged-in="isLoggedIn"
-			:user-info="userInfo"
-			:show-user-menu="showUserMenu"
-			@switchTab="switchTab"
-			@goToSearchPage="goToSearchPage"
-			@goToPublishArticle="goToPublishArticle"
-			@toggleUserMenu="toggleUserMenu"
-			@goToLogin="goToLogin"
-			@goToRegister="goToRegister"
-			@goToUserProfile="goToUserProfile"
-			@logout="logout"
-			@closeUserMenu="closeUserMenu"
-		/>
+		<TopNavBar />
 		
 		<!-- 分类导航 -->
 		<view class="category-nav">
@@ -70,7 +56,7 @@
 
 <script>
 import translatePublishTime from '@/uni_modules/uni-cms-article/common/publish-time';
-import Header from '@/pages/components/Header.vue';
+import TopNavBar from '@/components/TopNavBar.vue';
 import Footer from '@/pages/components/Footer.vue';
 
 const db = uniCloud.database();
@@ -80,7 +66,7 @@ const categoryDBName = 'circle-categories';
 
 export default {
 	components: {
-		Header,
+		TopNavBar,
 		Footer
 	},
 	data() {
