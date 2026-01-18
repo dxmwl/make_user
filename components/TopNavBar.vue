@@ -317,14 +317,14 @@ export default {
 .search-button {
 	background: #f8f9fa;
 	border: 2rpx solid #dee2e6;
-	border-radius: 30rpx;
+	border-radius: 10rpx;
 	padding: 12rpx 24rpx;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	cursor: pointer;
 	transition: all 0.3s ease;
-	margin-right: 20rpx; /* 给导航项之间留些间距 */
+	margin-right: 50rpx; /* 给导航项之间留些间距 */
 }
 
 .search-button:hover {
@@ -436,9 +436,13 @@ export default {
 }
 
 .login-btn {
+    padding-bottom: 10rpx;
+    padding-top: 10rpx;
+    padding-left: 30rpx;
+    padding-right: 30rpx;
 	background: #ecf0f1;
 	color: #2c3e50;
-	border-radius: 30rpx;
+	border-radius: 10rpx;
 	font-size: 26rpx;
 }
 
@@ -449,7 +453,11 @@ export default {
 .register-btn {
 	background: #3498db;
 	color: white;
-	border-radius: 30rpx;
+    padding-bottom: 10rpx;
+    padding-top: 10rpx;
+    padding-left: 30rpx;
+    padding-right: 30rpx;
+	border-radius: 10rpx;
 	font-size: 26rpx;
 }
 
