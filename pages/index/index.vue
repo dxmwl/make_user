@@ -216,7 +216,7 @@
 				try {
 					this.loading = true;
 					// 打印参数信息以便调试
-					console.log('调用get-article-list云函数，参数:', {
+					console.debug('调用get-article-list云函数，参数:', {
 						category_id: this.activeCategory,
 						page: this.currentPage,
 						pageSize: this.pageSize
@@ -230,7 +230,7 @@
 						}
 					});
 															
-					console.log('文章列表数据:', result);
+					console.debug('文章列表数据:', result);
 															
 					if(result && result.result && result.result.code === 0) {
 						const newArticles = result.result.data;
@@ -301,21 +301,21 @@
 			// 加载分类列表
 			async loadCategories() {
 				try {
-					console.log('开始加载分类列表...');
+					console.debug('开始加载分类列表...');
 					const result = await uniCloud.callFunction({
 						name: 'get-category-list'
 					});
-					console.log('分类数据:', result);
+					console.debug('分类数据:', result);
 								
 					// 从云函数获取分类数据
 					let fetchedCategories = [];
 																	
 					if(result && result.result && result.result.code === 0 && result.result.data && result.result.data.length > 0) {
-						console.log('数据库分类数据:', result.result.data);
+						console.debug('数据库分类数据:', result.result.data);
 						// 使用从云函数获取的分类数据
 						fetchedCategories = result.result.data;
 					} else {
-						console.log('未找到分类数据');
+						console.debug('未找到分类数据');
 					}
 																	
 					// 计算所有分类的总数作为全部分类的计数（使用云函数返回的count值）
@@ -339,7 +339,7 @@
 							this.categoriesList[existingIndex] = fetchedCat;
 						}
 					});
-					console.log('最终分类列表:', this.categoriesList);
+					console.debug('最终分类列表:', this.categoriesList);
 								
 					// 如果分类列表为空或只有全部分类，至少确保有"全部"分类
 					if (this.categoriesList.length <= 1) {
@@ -361,9 +361,6 @@
 					}
 				}
 								
-				// 获取文章总数
-				this.getTotalCount();
-								
 				// 在分类加载完成后，只在初始化阶段（即当前仍为默认分类）且没有文章数据时，加载全部分类的文章
 				const categoryExists = this.categoriesList.some(cat => cat._id === this.activeCategory);
 				if ((this.articles.length === 0 || !categoryExists) && this.activeCategory === 'all') {
@@ -380,9 +377,9 @@
 				}
 				
 				// 打印日志查看最终计算的全部数量
-				console.log('分类列表:', this.categoriesList);
-				console.log('全部分类计数:', allCategory ? allCategory.count : '未找到全部分类');
-				console.log('根据各分类计数计算的总数:', allCategoriesCount);
+				console.debug('分类列表:', this.categoriesList);
+				console.debug('全部分类计数:', allCategory ? allCategory.count : '未找到全部分类');
+				console.debug('根据各分类计数计算的总数:', allCategoriesCount);
 			},
 						
 			// 获取分类名称
@@ -409,7 +406,7 @@
 						name: 'get-hot-articles'
 					});
 									
-					console.log('热门文章数据:', result);
+					console.debug('热门文章数据:', result);
 									
 					if(result && result.result && result.result.code === 0) {
 						this.popularPosts = result.result.data;
@@ -487,14 +484,6 @@
 				});
 			},
 								
-			// 获取文章总数
-			async getTotalCount() {
-				// 由于 get-article-count 云函数不存在，暂时跳过此功能
-				// 可以通过其他方式获取文章总数，例如在获取分类列表时获取
-				console.warn('getTotalCount: get-article-count 云函数不存在，跳过');
-				// 可以考虑通过其他方式获取总数
-				// 例如，通过 get-category-list 中的分类计数来汇总
-			},
 			
 			// 更新单个分类的计数
 			updateCategoryCount(categoryId, count) {
