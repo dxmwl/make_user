@@ -489,43 +489,11 @@
 								
 			// 获取文章总数
 			async getTotalCount() {
-				try {
-					const result = await uniCloud.callFunction({
-						name: 'get-article-count'
-					});
-										
-					if(result && result.result && result.result.code === 0) {
-						// 更新总数
-						this.totalCount = result.result.data.count || 0;
-						
-						// 如果有分类计数信息，更新分类列表中的计数
-						if(result.result.data.categoryCounts && Array.isArray(result.result.data.categoryCounts)) {
-							result.result.data.categoryCounts.forEach(categoryCount => {
-								const category = this.categoriesList.find(cat => cat._id === categoryCount.categoryId);
-								if(category) {
-									category.count = categoryCount.count;
-								}
-							});
-							
-							// 重新计算"全部"分类的计数（所有其他分类的总和）
-							const otherCategoriesCount = this.categoriesList
-								.filter(cat => cat._id !== 'all')
-								.reduce((sum, category) => sum + (category.count || 0), 0);
-							const allCategory = this.categoriesList.find(cat => cat._id === 'all');
-							if(allCategory) {
-								allCategory.count = otherCategoriesCount;
-							}
-						}
-					} else {
-						console.error('获取文章总数失败:', result.result ? result.result.msg : '未知错误');
-						// 设置一个默认值
-						this.totalCount = 0;
-					}
-				} catch (error) {
-					console.error('获取文章总数出错:', error);
-					// 如果云函数调用失败，设置一个默认值
-					this.totalCount = 0;
-				}
+				// 由于 get-article-count 云函数不存在，暂时跳过此功能
+				// 可以通过其他方式获取文章总数，例如在获取分类列表时获取
+				console.warn('getTotalCount: get-article-count 云函数不存在，跳过');
+				// 可以考虑通过其他方式获取总数
+				// 例如，通过 get-category-list 中的分类计数来汇总
 			},
 			
 			// 更新单个分类的计数
