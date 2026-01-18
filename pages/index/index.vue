@@ -92,6 +92,16 @@
 							</uni-load-state>
 						</list>
 						<!-- #endif -->
+						
+						<!-- 分页组件 -->
+						<view class="pagination">
+							<uni-pagination 
+								:current="currentPage" 
+								:total="total" 
+								:pageSize="pageSize"
+								@change="handlePageChange"
+							></uni-pagination>
+						</view>
 					</view>
 					
 				</div>
@@ -112,6 +122,8 @@
 	import refreshBox from '@/uni_modules/uni-cms-article/components/refresh-box/refreshBox.nvue';
 	import TopNavBar from '@/components/TopNavBar.vue';
 	import Footer from '@/pages/components/Footer.vue';
+	// 引入分页组件
+	import uniPagination from '@/uni_modules/uni-pagination/components/uni-pagination/uni-pagination.vue';
 	
 
 	export default {
@@ -121,7 +133,8 @@
 			threeCover,
 			refreshBox,
 			TopNavBar,
-			Footer
+			Footer,
+			uniPagination
 		},
 		data() {
 			return {
@@ -134,6 +147,7 @@
 				listData: [], // 用于存储 unicloud-db 加载的数据
 				currentPage: 1,
 				pageSize: 10,
+				total: 0, // 总记录数
 				hasMore: true,
 				loading: false,
 				loadType: null,
@@ -212,56 +226,70 @@
 				this.updateUserInfoDisplay();
 			},
 			// 加载文章列表
-			async loadArticles() {
+			async loadArticles(currentPage = null) {
 				try {
 					this.loading = true;
+					// 如果传入了页码，使用传入的页码，否则使用当前页码
+					const page = currentPage !== null ? currentPage : this.currentPage;
+								
 					// 打印参数信息以便调试
 					console.debug('调用get-article-list云函数，参数:', {
 						category_id: this.activeCategory,
-						page: this.currentPage,
+						page: page,
 						pageSize: this.pageSize
 					});
 					const result = await uniCloud.callFunction({
 						name: 'get-article-list',
 						data: {
 							category_id: this.activeCategory,
-							page: this.currentPage,
+							page: page,
 							pageSize: this.pageSize
 						}
 					});
-															
+																			
 					console.debug('文章列表数据:', result);
-															
+																			
 					if(result && result.result && result.result.code === 0) {
 						const newArticles = result.result.data;
-						if(this.currentPage === 1) {
+									
+						// 如果指定了页码，更新当前页码
+						if (currentPage !== null) {
+							this.currentPage = currentPage;
+						}
+									
+						if(page === 1) {
 							// 第一页，替换所有数据
 							this.articles = newArticles;
 						} else {
 							// 加载更多，追加数据
 							this.articles = this.articles.concat(newArticles);
 						}
-															
+									
 						// 检查是否还有更多数据
 						this.hasMore = newArticles.length === this.pageSize;
-																
+									
+						// 更新总记录数（如果云函数返回了总数）
+						if (result.result.pagination) {
+							this.total = result.result.pagination.total || 0;
+						}
+									
 						// 如果是第一页，更新当前分类的计数
-						if(this.currentPage === 1) {
+						if(page === 1) {
 							// 更新当前分类的计数（如果这不是'全部'分类）
 							if(this.activeCategory !== 'all') {
 								// 假设返回的数据中有总数信息
 								const categoryCount = result.result.totalCount || newArticles.length;
 								this.updateCategoryCountOnLoad(this.activeCategory, categoryCount);
 							}
-																
+									
 							// 如果是'全部'分类，获取总数
 							if(this.activeCategory === 'all' && result.result.totalCount !== undefined) {
 								this.totalCount = result.result.totalCount;
 							}
 						}
-																
+								
 						// 如果是第一页且总数尚未设置，尝试估算总数
-						if(this.currentPage === 1 && this.totalCount === 0) {
+						if(page === 1 && this.totalCount === 0) {
 							// 尝试通过云函数返回的额外信息获取总数，如果有的话
 							if(result.result.totalCount !== undefined) {
 								this.totalCount = result.result.totalCount;
@@ -458,7 +486,7 @@
 			async loadMore() {
 				if (!this.loading && this.hasMore) {
 					this.currentPage++;
-					await this.loadArticles(true);
+					await this.loadArticles(this.currentPage);
 				}
 			},
 			// 查询出错
@@ -499,6 +527,17 @@
 							.reduce((sum, category) => sum + (category.count || 0), 0);
 						allCategory.count = otherCategoriesCount;
 					}
+				}
+			},
+			
+			// 处理分页变化
+			handlePageChange(e) {
+				const newPage = e.current;
+				if (newPage !== this.currentPage) {
+					this.currentPage = newPage;
+					// 重新加载文章列表，清空当前列表
+					this.articles = [];
+					this.loadArticles(newPage);
 				}
 			},
 			
@@ -1519,6 +1558,16 @@
 			color: #666;
 			cursor: pointer;
 			margin-bottom: 10rpx;
+		}
+					
+		/* 分页组件样式 */
+		.pagination {
+			display: flex;
+			justify-content: center;
+			margin: 20rpx 0;
+			padding: 20rpx 0;
+			background-color: #fff;
+			border-top: 1rpx solid #eee;
 		}
 		
 		.category.active {
