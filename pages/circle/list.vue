@@ -47,32 +47,21 @@
 						</view>
 					</view>
 				</view>
-				
-				<!-- 加载状态 -->
+			</view>
+            <!-- 加载状态 -->
 				<view class="loading-container" v-if="loading">
 					<uni-load-more status="loading"></uni-load-more>
 				</view>
 
 				<!-- 分页组件 -->
-				<view class="pagination-container" >
-					<view class="pagination-info">
-						第 {{ currentPage }} 页，共 {{ totalPages }} 页，总计 {{ total }} 条
-					</view>
-					<view class="pagination-controls">
-						<button :disabled="currentPage <= 1" @click="changePage(currentPage - 1)">上一页</button>
-						<view class="page-numbers">
-							<button 
-							  v-for="pageNum in getPageNumbers()" 
-							  :key="pageNum" 
-							  :class="{'active': pageNum === currentPage}" 
-							  @click="changePage(pageNum)">
-							  {{ pageNum }}
-							</button>
-						</view>
-						<button :disabled="currentPage >= totalPages" @click="changePage(currentPage + 1)">下一页</button>
-					</view>
+				<view class="pagination">
+					<uni-pagination 
+						:current="currentPage" 
+						:total="total" 
+						:pageSize="pageSize"
+						@change="handlePageChange"
+					></uni-pagination>
 				</view>
-			</view>
 		</view>
 		
 		<Footer />
@@ -83,6 +72,8 @@
 import translatePublishTime from '@/uni_modules/uni-cms-article/common/publish-time';
 import TopNavBar from '@/components/TopNavBar.vue';
 import Footer from '@/pages/components/Footer.vue';
+// 引入分页组件
+import uniPagination from '@/uni_modules/uni-pagination/components/uni-pagination/uni-pagination.vue';
 
 const db = uniCloud.database();
 const circleDBName = 'circles';
@@ -92,7 +83,8 @@ const categoryDBName = 'circle-categories';
 export default {
 	components: {
 		TopNavBar,
-		Footer
+		Footer,
+		uniPagination
 	},
 	data() {
 		return {
@@ -379,6 +371,16 @@ export default {
 			}
 			
 			return pages;
+		},
+		// 处理分页变化
+		handlePageChange(e) {
+			const newPage = e.current;
+			if (newPage !== this.currentPage) {
+				this.currentPage = newPage;
+				// 重新加载交流圈列表，清空当前列表
+				this.circleList = [];
+				this.loadCircles();
+			}
 		},
 		// 切换用户菜单显示
 		toggleUserMenu() {
@@ -1024,59 +1026,15 @@ page {
 		text-align: center;
 	}
 	
-	.pagination-container {
+	.pagination {
 		margin: 30rpx 0;
 		padding: 20rpx;
 		border-top: 1rpx solid #ecf0f1;
 		background: #ffffff;
-	}
-	
-	.pagination-info {
 		text-align: center;
-		margin-bottom: 20rpx;
-		color: #7f8c8d;
-		font-size: 28rpx;
+		display: block; /* 确保分页组件显示为块级元素 */
 	}
 	
-	.pagination-controls {
-		display: flex;
-		justify-content: center;
-		align-items: center;
-		gap: 10rpx;
-	}
-	
-	.pagination-controls button {
-		background: #3498db;
-		color: white;
-		border: none;
-		padding: 15rpx 20rpx;
-		border-radius: 8rpx;
-		font-size: 26rpx;
-	}
-	
-	.pagination-controls button:disabled {
-		background: #bdc3c7;
-	}
-	
-	.page-numbers {
-		display: flex;
-		gap: 10rpx;
-		margin: 0 20rpx;
-	}
-	
-	.page-numbers button {
-		background: #ecf0f1;
-		color: #2c3e50;
-		border: 1rpx solid #bdc3c7;
-		padding: 10rpx 15rpx;
-		border-radius: 6rpx;
-		font-size: 26rpx;
-	}
-	
-	.page-numbers button.active {
-		background: #3498db;
-		color: white;
-		border-color: #3498db;
-	}
+
 }
 </style>
