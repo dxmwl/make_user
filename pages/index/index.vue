@@ -38,8 +38,6 @@
 						<!-- 博客文章列表 -->
 						<view class="blog-posts">
 							<!-- 使用 uni-cms-article 提供的标准列表组件 -->
-							<unicloud-db ref='udb' v-slot:default="{ data, pagination, hasMore, loading, error, options }" @error="onqueryerror"
-								:collection="colList" :page-size="10" orderby="publish_date desc" @load="listLoad">
 							<!-- #ifndef APP-NVUE -->
 							<scroll-view
 								scroll-y
@@ -48,7 +46,7 @@
 								@refresherrefresh="refresh"
 								@scrolltolower="loadMore"
 							>
-								<template v-for="item in data">
+								<template v-for="item in articles">
 									<not-cover v-if="item.thumbnail && item.thumbnail.length === 0" :data="item" ></not-cover>
 									<right-small-cover v-else-if="item.thumbnail && item.thumbnail.length === 1"
 										:data="item" ></right-small-cover>
@@ -57,7 +55,7 @@
 								</template>
 								<!-- 加载状态 -->
 								<uni-load-state @networkResume="refresh"
-									:state="{ data: data, pagination, hasMore, loading, error }"
+									:state="{ data: articles, hasMore, loading, error: null }"
 									@clickLoadMore="loadMore">
 								</uni-load-state>
 							</scroll-view>
@@ -65,7 +63,7 @@
 							<!-- #ifdef APP-NVUE -->
 							<list class="uni-list" :border="false">
 								<refresh-box :loading="loading" @refresh="refresh"></refresh-box>
-								<template v-for="item in data">
+								<template v-for="item in articles">
 									<not-cover v-if="item.thumbnail && item.thumbnail.length === 0" :data="item" ></not-cover>
 									<right-small-cover v-else-if="item.thumbnail && item.thumbnail.length === 1"
 										:data="item" ></right-small-cover>
@@ -73,12 +71,11 @@
 										:data="item" ></three-cover>
 								</template>
 								<uni-load-state @networkResume="refresh"
-									:state="{ data: data, pagination, hasMore, loading, error }"
+									:state="{ data: articles, hasMore, loading, error: null }"
 									@clickLoadMore="loadMore">
 								</uni-load-state>
 							</list>
 							<!-- #endif -->
-							</unicloud-db>
 						</view>
 						
 						<!-- 侧边栏 -->
@@ -89,20 +86,21 @@
 								<view class="popular-post" v-for="(popular, index) in popularPosts" :key="index">
 								<text class="popular-title" @click="goToArticleDetail(popular._id)">{{ popular.title }}</text>
 								<text class="popular-date">{{ publishTime(popular.publish_date) }}</text>
-							</view>
+								</view>
 							</view>
 							
-						<!-- 分类 -->
+							<!-- 分类 -->
 							<view class="widget">
 								<h3 class="widget-title">分类</h3>
 								<view class="categories">
-								<text class="category" v-for="(cat, index) in categoriesList.filter(c => c._id !== 'all')" :key="cat._id" @click="filterByCategory(cat._id)">
-									{{ cat.name }} ({{ cat.count }})
+									<text class="category" :class="{ active: activeCategory === 'all' }" @click="filterByCategory('all')">全部 ({{ getAllCategoryCount() }})</text>
+								<text class="category" v-for="(cat, index) in categoriesList.filter(c => c._id !== 'all')" :key="cat._id" :class="{ active: activeCategory === cat._id }" @click="filterByCategory(cat._id)">
+									{{ cat.name }} ({{ cat.count || 0 }})
 								</text>
 								</view>
 							</view>
 							
-						<!-- 标签云 -->
+							<!-- 标签云 -->
 							<view class="widget">
 								<h3 class="widget-title">标签云</h3>
 							<view class="tags-cloud">
@@ -203,11 +201,7 @@
 	import Header from '@/pages/components/Header.vue';
 	import Footer from '@/pages/components/Footer.vue';
 	
-	const db = uniCloud.database();
-	const articleDBName = 'uni-cms-articles'
-	const categoryDBName = 'uni-cms-categories'
-	const userDBName = 'uni-id-users'
-	
+
 	export default {
 		components: {
 			notCover,
@@ -222,6 +216,7 @@
 				where: '"article_status" == 1', // 查询条件
 				activeCategory: 'all', // 当前选中的分类ID
 				categoriesList: [], // 分类列表，从云函数获取
+				totalCount: 0, // 总文章数
 				popularPosts: [], // 热门文章列表，通过云函数动态加载
 				articles: [], // 文章列表
 				listData: [], // 用于存储 unicloud-db 加载的数据
@@ -256,6 +251,7 @@
 				circleList: [] // 交流圈列表
 			}
 		},
+
 		computed: {
 			// 连表查询，返回两个集合的查询结果
 			colList() {
@@ -286,9 +282,6 @@
 			this.loadCategories();
 			// 加载标签云
 			this.loadRandomTags();
-			// 加载文章列表
-			this.loadArticles();
-			
 			// 如果有有效token，但全局store显示未登录，自动更新用户信息
 			this.initLoginState();
 		},
@@ -345,6 +338,32 @@
 															
 						// 检查是否还有更多数据
 						this.hasMore = newArticles.length === this.pageSize;
+																
+						// 如果是第一页，更新当前分类的计数
+						if(this.currentPage === 1) {
+							// 更新当前分类的计数（如果这不是'全部'分类）
+							if(this.activeCategory !== 'all') {
+								// 假设返回的数据中有总数信息
+								const categoryCount = result.result.totalCount || newArticles.length;
+								this.updateCategoryCountOnLoad(this.activeCategory, categoryCount);
+							}
+																
+							// 如果是'全部'分类，获取总数
+							if(this.activeCategory === 'all' && result.result.totalCount !== undefined) {
+								this.totalCount = result.result.totalCount;
+							}
+						}
+																
+						// 如果是第一页且总数尚未设置，尝试估算总数
+						if(this.currentPage === 1 && this.totalCount === 0) {
+							// 尝试通过云函数返回的额外信息获取总数，如果有的话
+							if(result.result.totalCount !== undefined) {
+								this.totalCount = result.result.totalCount;
+							} else {
+								// 如果没有提供总数，则在后续获取更多信息时更新
+								// 我们将在分类加载时专门获取总数
+							}
+						}
 					} else {
 						console.error('获取文章列表失败:', result.result ? result.result.msg : '未知错误');
 					}
@@ -381,10 +400,10 @@
 						name: 'get-category-list'
 					});
 					console.log('分类数据:', result);
-					
+								
 					// 从云函数获取分类数据
 					let fetchedCategories = [];
-											
+																	
 					if(result && result.result && result.result.code === 0 && result.result.data && result.result.data.length > 0) {
 						console.log('数据库分类数据:', result.result.data);
 						// 使用从云函数获取的分类数据
@@ -392,18 +411,82 @@
 					} else {
 						console.log('未找到分类数据');
 					}
-											
-					// 添加"全部"分类到列表开头
-					const allCategory = { _id: 'all', name: '全部' };
+																	
+					// 计算所有分类的总数作为全部分类的计数（使用云函数返回的count值）
+					const allCategoriesCount = fetchedCategories.reduce((sum, category) => sum + (category.count || 0), 0);
+					const allCategory = { _id: 'all', name: '全部', count: allCategoriesCount };
 					this.categoriesList = [allCategory, ...fetchedCategories];
 					console.log('最终分类列表:', this.categoriesList);
+								
+					// 如果分类列表为空或只有全部分类，至少确保有"全部"分类
+					if (this.categoriesList.length <= 1) {
+						// 计算其他分类的总数作为全部分类的计数
+						const otherCategoriesCount = Array.isArray(fetchedCategories) ? fetchedCategories.reduce((sum, category) => sum + (category.count || 0), 0) : 0;
+						const fallbackCategories = [
+							{ _id: 'all', name: '全部', count: otherCategoriesCount },
+							{ _id: 'frontend', name: '前端开发', count: 0 },
+							{ _id: 'backend', name: '后端开发', count: 0 },
+							{ _id: 'mobile', name: '移动端', count: 0 },
+							{ _id: 'ai', name: '人工智能', count: 0 },
+							{ _id: 'cloud', name: '云计算', count: 0 }
+						];
+						this.categoriesList = fallbackCategories;
+					}
 				} catch (e) {
 					console.error('加载分类列表失败', e);
-					// 如果加载失败，提供"全部"分类和一些默认分类作为后备
-					const allCategory = { _id: 'all', name: '全部' };
-					const defaultCategories = [{ _id: 'frontend', name: '前端开发' }, { _id: 'backend', name: '后端开发' }, { _id: 'mobile', name: '移动端' }];
-					this.categoriesList = [allCategory, ...defaultCategories];
+					// 如果加载失败，提供"全部"分类和其他默认分类作为后备
+					const fallbackCategories = [
+						{ _id: 'all', name: '全部', count: 0 },
+						{ _id: 'frontend', name: '前端开发', count: 0 },
+						{ _id: 'backend', name: '后端开发', count: 0 },
+						{ _id: 'mobile', name: '移动端', count: 0 },
+						{ _id: 'ai', name: '人工智能', count: 0 },
+						{ _id: 'cloud', name: '云计算', count: 0 }
+					];
+					this.categoriesList = fallbackCategories;
 				}
+								
+				// 获取文章总数
+				this.getTotalCount();
+								
+				// 在分类加载完成后，如果还没有文章数据或当前分类无效，则加载全部分类的文章
+				const categoryExists = this.categoriesList.some(cat => cat._id === this.activeCategory);
+				if (this.articles.length === 0 || !categoryExists) {
+					this.activeCategory = 'all';
+					this.loadArticles();
+				}
+				
+				// 确保'全部'分类的计数正确（如果在fetchedCategories处理过程中有任何问题）
+				const allCategoriesCount = this.categoriesList
+					.filter(cat => cat._id !== 'all')
+					.reduce((sum, category) => sum + (category.count || 0), 0);
+				const allCategory = this.categoriesList.find(cat => cat._id === 'all');
+				if(allCategory) {
+					allCategory.count = allCategoriesCount;
+				}
+				
+				// 打印日志查看最终计算的全部数量
+				console.log('分类列表:', this.categoriesList);
+				console.log('全部分类计数:', allCategory ? allCategory.count : '未找到全部分类');
+				console.log('根据各分类计数计算的总数:', allCategoriesCount);
+			},
+						
+			// 获取分类名称
+			getCategoryName(categoryId) {
+				const category = this.categoriesList.find(cat => cat._id === categoryId);
+				return category ? category.name : '未知分类';
+			},
+			
+			// 获取全部分类的计数
+			getAllCategoryCount() {
+				const allCategory = this.categoriesList.find(cat => cat._id === 'all');
+				return allCategory ? allCategory.count || 0 : this.totalCount || 0;
+			},
+					
+			// 过滤分类
+			filterByCategory(categoryId) {
+				// 切换到对应的分类
+				this.changeCategory(categoryId);
 			},
 			// 加载热门文章
 			async loadPopularPosts() {
@@ -443,20 +526,42 @@
 				this.articles = []; // 清空当前文章列表
 				this.loadArticles(); // 重新加载文章
 			},
-			// 切换分类（包括全部分类）
-			changeCategoryWithAll(categoryId) {
-				this.activeCategory = categoryId;
-				this.currentPage = 1; // 重置到第一页
-				this.articles = []; // 清空当前文章列表
-				this.loadArticles(); // 重新加载文章
+			
+			// 更新分类计数
+			updateCategoryCountOnLoad(categoryId, articleCount) {
+				this.updateCategoryCount(categoryId, articleCount);
 			},
-			// 加载更多文章
-			loadMoreArticles() {
-				if (!this.loading && this.hasMore) {
-					this.currentPage++;
-					this.loadArticles();
+
+			// 刷新数据
+			async refresh() {
+				try {
+					this.currentPage = 1;
+					await this.loadArticles();
+					uni.stopPullDownRefresh();
+				} catch (error) {
+					console.error('刷新数据失败:', error);
+					uni.stopPullDownRefresh();
 				}
 			},
+			// 加载更多
+			async loadMore() {
+				if (!this.loading && this.hasMore) {
+					this.currentPage++;
+					await this.loadArticles(true);
+				}
+			},
+			// 查询出错
+				onqueryerror(e) {
+				console.error(e);
+			},
+
+			// 跳转到文章详情
+			goToArticleDetail(id) {
+				uni.navigateTo({
+					url: `/uni_modules/uni-cms-article/pages/detail/detail?id=${id}`
+				});
+			},
+			
 			// 格式化时间戳
 			publishTime(timestamp) {
 				return translatePublishTime(timestamp)
@@ -467,17 +572,65 @@
 					url: `/uni_modules/uni-cms-article/pages/detail/detail?id=${postId}`
 				});
 			},
-			filterByCategory(categoryId) {
-				// 切换到对应的分类
-				this.changeCategory(categoryId);
+								
+			// 获取文章总数
+			async getTotalCount() {
+				try {
+					const result = await uniCloud.callFunction({
+						name: 'get-article-count'
+					});
+										
+					if(result && result.result && result.result.code === 0) {
+						// 更新总数
+						this.totalCount = result.result.data.count || 0;
+						
+						// 如果有分类计数信息，更新分类列表中的计数
+						if(result.result.data.categoryCounts && Array.isArray(result.result.data.categoryCounts)) {
+							result.result.data.categoryCounts.forEach(categoryCount => {
+								const category = this.categoriesList.find(cat => cat._id === categoryCount.categoryId);
+								if(category) {
+									category.count = categoryCount.count;
+								}
+							});
+							
+							// 重新计算"全部"分类的计数（所有其他分类的总和）
+							const otherCategoriesCount = this.categoriesList
+								.filter(cat => cat._id !== 'all')
+								.reduce((sum, category) => sum + (category.count || 0), 0);
+							const allCategory = this.categoriesList.find(cat => cat._id === 'all');
+							if(allCategory) {
+								allCategory.count = otherCategoriesCount;
+							}
+						}
+					} else {
+						console.error('获取文章总数失败:', result.result ? result.result.msg : '未知错误');
+						// 设置一个默认值
+						this.totalCount = 0;
+					}
+				} catch (error) {
+					console.error('获取文章总数出错:', error);
+					// 如果云函数调用失败，设置一个默认值
+					this.totalCount = 0;
+				}
 			},
-			// 切换分类
-			changeCategory(categoryId) {
-				this.activeCategory = categoryId;
-				this.currentPage = 1; // 重置到第一页
-				// 重新加载文章列表
-				this.loadArticles();
+			
+			// 更新单个分类的计数
+			updateCategoryCount(categoryId, count) {
+				const category = this.categoriesList.find(cat => cat._id === categoryId);
+				if(category && categoryId !== 'all') {
+					category.count = count;
+					
+					// 更新"全部"分类的计数（所有其他分类的总和）
+					const allCategory = this.categoriesList.find(cat => cat._id === 'all');
+					if(allCategory) {
+						const otherCategoriesCount = this.categoriesList
+							.filter(cat => cat._id !== 'all')
+							.reduce((sum, category) => sum + (category.count || 0), 0);
+						allCategory.count = otherCategoriesCount;
+					}
+				}
 			},
+			
 			filterByTag(tag) {
 				console.log(`筛选标签: ${tag}`);
 				// 实现标签筛选逻辑
@@ -545,48 +698,7 @@
 					plus.runtime.openWeb(url);
 				}
 			},
-			// 处理 unicloud-db 数据加载
-			async listLoad(data) {
-				const listData = data.map(item => {
-					if (typeof item.thumbnail === 'string') {
-						item.thumbnail = [item.thumbnail]
-					}
-					return item
-				})
-				
-				this.listData = this.loadType === 'loadMore' ? this.articles.concat(listData) : listData
-				this.loadType = null
-			},
-			// 刷新数据
-			refresh() {
-				this.loadType = 'refresh'
-				this.$refs.udb.loadData({
-					clear: true
-				}, () => {
-					uni.stopPullDownRefresh()
-				})
-			},
-			// 加载更多
-			loadMore() {
-				this.loadType = 'loadMore'
-				this.$refs.udb.loadMore()
-			},
-			// 查询出错
-			onqueryerror(e) {
-				console.error(e);
-			},
-			// 跳转到文章详情
-			goToArticleDetail(id) {
-				uni.navigateTo({
-					url: `/uni_modules/uni-cms-article/pages/detail/detail?id=${id}`
-				});
-			},
-			// 跳转到文章详情页
-			readMore(postId) {
-				uni.navigateTo({
-					url: `/uni_modules/uni-cms-article/pages/detail/detail?id=${postId}`
-				});
-			},
+			
 			// 跳转到用户个人资料页
 			goToUserProfile() {
 				uni.navigateTo({
@@ -1669,5 +1781,52 @@
 			line-height: 1.6;
 			display: block;
 			margin-bottom: 10rpx;
+		}
+		
+		/* 分类按钮样式 */
+		.category {
+			margin-right: 20rpx;
+			padding: 8rpx 16rpx;
+			background-color: #f0f0f0;
+			border-radius: 8rpx;
+			font-size: 24rpx;
+			color: #666;
+			cursor: pointer;
+			margin-bottom: 10rpx;
+		}
+		
+		.category.active {
+			background-color: #007AFF;
+			color: white;
+		}
+		
+		/* 顶部分类导航样式 */
+		.category-nav {
+			width: 100%;
+			background-color: #fff;
+			padding: 20rpx 0;
+			border-bottom: 1rpx solid #eee;
+		}
+		
+		.category-scroll {
+			display: flex;
+			white-space: nowrap;
+			padding: 0 20rpx;
+		}
+		
+		.category-item {
+			display: inline-block;
+			margin-right: 30rpx;
+			padding: 10rpx 20rpx;
+			background-color: #f8f8f8;
+			border-radius: 30rpx;
+			font-size: 28rpx;
+			color: #666;
+			cursor: pointer;
+		}
+		
+		.category-item.active {
+			background-color: #007AFF;
+			color: white;
 		}
 	</style>
