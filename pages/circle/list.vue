@@ -7,10 +7,10 @@
 			<scroll-view scroll-x="true" class="category-scroll">
 				<view class="category-item" 
 					v-for="(category, index) in categoriesList" 
-					:key="category._id"
-					:class="{ active: activeCategory === category._id }"
-					@click="changeCategory(category._id)">
-					<text>{{ category.name }}</text>
+					:key="category.value"
+					:class="{ active: activeCategory === category.value }"
+					@click="changeCategory(category.value)">
+					<text>{{ category.text }}</text>
 				</view>
 			</scroll-view>
 		</view>
@@ -29,10 +29,18 @@
 							</view>
 						</view>
 						<view class="circle-content">
-							<view class="circle-title">{{ circle.title }}</view>
-							<view class="circle-description">{{ circle.description }}</view>
+							<view class="circle-title">{{ circle.group_name }}</view>
+							<view class="circle-description">{{ circle.group_description }}</view>
 						</view>
 						<view class="circle-footer">
+							<view class="circle-category" v-if="circle.category_name">
+								<text class="category-label">分类:</text>
+								<text class="category-name">{{ circle.category_name }}</text>
+							</view>
+							<view class="circle-type" v-if="circle.group_type">
+								<text class="type-label">类型:</text>
+								<text class="type-name">{{ getGroupTypeName(circle.group_type) }}</text>
+							</view>
 							<view class="circle-tags">
 								<text class="tag" v-for="(tag, idx) in circle.tags" :key="idx">{{ tag }}</text>
 							</view>
@@ -44,8 +52,27 @@
 				<view class="loading-container" v-if="loading">
 					<uni-load-more status="loading"></uni-load-more>
 				</view>
-				<view class="no-more" v-else-if="!hasMore">
+				<view class="no-more" v-else-if="!hasMore && circleList.length > 0">
 					<text>没有更多交流圈了</text>
+				</view>
+				<!-- 分页组件 -->
+				<view class="pagination-container" v-if="totalPages > 1">
+					<view class="pagination-info">
+						第 {{ currentPage }} 页，共 {{ totalPages }} 页，总计 {{ total }} 条
+					</view>
+					<view class="pagination-controls">
+						<button :disabled="currentPage <= 1" @click="changePage(currentPage - 1)">上一页</button>
+						<view class="page-numbers">
+							<button 
+							  v-for="pageNum in getPageNumbers()" 
+							  :key="pageNum" 
+							  :class="{'active': pageNum === currentPage}" 
+							  @click="changePage(pageNum)">
+							  {{ pageNum }}
+							</button>
+						</view>
+						<button :disabled="currentPage >= totalPages" @click="changePage(currentPage + 1)">下一页</button>
+					</view>
 				</view>
 			</view>
 		</view>
@@ -77,6 +104,8 @@ export default {
 			circleList: [], // 交流圈列表
 			currentPage: 1,
 			pageSize: 10,
+			total: 0, // 总记录数
+			totalPages: 0, // 总页数
 			hasMore: true,
 			loading: false,
 			isLoggedIn: false, // 是否已登录
@@ -135,7 +164,7 @@ export default {
 				this.loading = true;
 				const result = await uniCloud.callFunction({
 					name: 'get-circle-list',
-					params: {
+					data: {
 						category_id: this.activeCategory,
 						page: this.currentPage,
 						pageSize: this.pageSize
@@ -146,6 +175,13 @@ export default {
 				
 				if(result && result.result && result.result.code === 0) {
 					const newCircles = result.result.data;
+					
+					// 处理分页信息
+					if(result.result.pagination) {
+						this.total = result.result.pagination.total;
+						this.totalPages = result.result.pagination.totalPages;
+					}
+					
 					if(this.currentPage === 1) {
 						// 第一页，替换所有数据
 						this.circleList = newCircles;
@@ -155,7 +191,7 @@ export default {
 					}
 					
 					// 检查是否还有更多数据
-					this.hasMore = newCircles.length === this.pageSize;
+					this.hasMore = this.currentPage < this.totalPages;
 				} else {
 					console.error('获取交流圈列表失败:', result.result ? result.result.msg : '未知错误');
 				}
@@ -166,16 +202,16 @@ export default {
 				if(this.currentPage === 1) {
 					this.circleList = [{
 						_id: '1',
-						title: '前端开发交流群',
-						description: '专注前端技术交流，包含Vue、React、Angular等框架讨论',
+						group_name: '前端开发交流群',
+						group_description: '专注前端技术交流，包含Vue、React、Angular等框架讨论',
 						creator_nickname: '前端小王',
 						creator_avatar: '/static/logo.png',
 						create_time: new Date().getTime(),
 						tags: ['前端', 'Vue', 'React']
 					}, {
 						_id: '2',
-						title: 'Java后端技术群',
-						description: 'Java后端开发技术交流，Spring Boot、微服务架构等',
+						group_name: 'Java后端技术群',
+						group_description: 'Java后端开发技术交流，Spring Boot、微服务架构等',
 						creator_nickname: 'Java老司机',
 						creator_avatar: '/static/logo.png',
 						create_time: new Date().getTime(),
@@ -207,19 +243,19 @@ export default {
 				}
 										
 				// 添加"全部"分类到列表开头
-				const allCategory = { _id: 'all', name: '全部' };
+				const allCategory = { value: 'all', text: '全部' };
 				this.categoriesList = [allCategory, ...fetchedCategories];
 				console.log('最终分类列表:', this.categoriesList);
 			} catch (e) {
 				console.error('加载分类列表失败', e);
 				// 如果加载失败，提供"全部"分类和一些默认分类作为后备
-				const allCategory = { _id: 'all', name: '全部' };
+				const allCategory = { value: 'all', text: '全部' };
 				const defaultCategories = [
-					{ _id: 'frontend', name: '前端开发' }, 
-					{ _id: 'backend', name: '后端开发' }, 
-					{ _id: 'mobile', name: '移动端' },
-					{ _id: 'ai', name: '人工智能' },
-					{ _id: 'devops', name: '运维' }
+					{ value: 'frontend', text: '前端开发' }, 
+					{ value: 'backend', text: '后端开发' }, 
+					{ value: 'mobile', text: '移动端' },
+					{ value: 'ai', text: '人工智能' },
+					{ value: 'devops', text: '运维' }
 				];
 				this.categoriesList = [allCategory, ...defaultCategories];
 			}
@@ -228,6 +264,8 @@ export default {
 		changeCategory(categoryId) {
 			this.activeCategory = categoryId;
 			this.currentPage = 1; // 重置到第一页
+			this.total = 0; // 重置总数
+			this.totalPages = 0; // 重置总页数
 			this.circleList = []; // 清空当前列表
 			this.loadCircles(); // 重新加载
 		},
@@ -300,6 +338,49 @@ export default {
 			} else {
 				this.userInfo = {};
 			}
+		},
+		// 获取群类型名称
+		getGroupTypeName(groupType) {
+			const groupTypeMap = {
+				'qq': 'QQ群',
+				'weixin': '微信群'
+			};
+			return groupTypeMap[groupType] || groupType;
+		},
+		// 切换页面
+		changePage(pageNum) {
+			if (pageNum < 1 || pageNum > this.totalPages || pageNum === this.currentPage) {
+				return;
+			}
+			this.currentPage = pageNum;
+			this.circleList = [];
+			this.loadCircles();
+		},
+		// 计算显示的页码
+		getPageNumbers() {
+			const pages = [];
+			const maxVisiblePages = 5;
+			
+			if (this.totalPages <= maxVisiblePages) {
+				// 如果总页数小于等于最大显示页数，显示所有页码
+				for (let i = 1; i <= this.totalPages; i++) {
+					pages.push(i);
+				}
+			} else {
+				// 否则，显示当前页附近的页码
+				let startPage = Math.max(1, this.currentPage - Math.floor(maxVisiblePages / 2));
+				let endPage = Math.min(this.totalPages, startPage + maxVisiblePages - 1);
+				
+				if (endPage - startPage + 1 < maxVisiblePages) {
+					startPage = Math.max(1, endPage - maxVisiblePages + 1);
+				}
+				
+				for (let i = startPage; i <= endPage; i++) {
+					pages.push(i);
+				}
+			}
+			
+			return pages;
 		},
 		// 切换用户菜单显示
 		toggleUserMenu() {
@@ -398,6 +479,7 @@ page {
 	display: flex;
 	flex-direction: column;
 }
+
 
 .header {
 	background: #fff;
@@ -772,6 +854,40 @@ page {
 	border-radius: 20rpx;
 	font-size: 22rpx;
 }
+	
+	.circle-category {
+		margin-bottom: 10rpx;
+		display: flex;
+		align-items: center;
+		font-size: 24rpx;
+		color: #7f8c8d;
+	}
+	
+	.category-label {
+		color: #95a5a6;
+		margin-right: 5rpx;
+	}
+	
+	.category-name {
+		color: #3498db;
+		font-weight: bold;
+	}
+	
+	.circle-type {
+		display: flex;
+		align-items: center;
+		margin-bottom: 10rpx;
+	}
+	
+	.type-label {
+		color: #95a5a6;
+		margin-right: 5rpx;
+	}
+	
+	.type-name {
+		color: #2ecc71;
+		font-weight: bold;
+	}
 
 .loading-container {
 	text-align: center;
@@ -904,6 +1020,61 @@ page {
 	
 	.company {
 		text-align: center;
+	}
+	
+	.pagination-container {
+		margin: 30rpx 0;
+		padding: 20rpx;
+		border-top: 1rpx solid #ecf0f1;
+		background: #ffffff;
+	}
+	
+	.pagination-info {
+		text-align: center;
+		margin-bottom: 20rpx;
+		color: #7f8c8d;
+		font-size: 28rpx;
+	}
+	
+	.pagination-controls {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		gap: 10rpx;
+	}
+	
+	.pagination-controls button {
+		background: #3498db;
+		color: white;
+		border: none;
+		padding: 15rpx 20rpx;
+		border-radius: 8rpx;
+		font-size: 26rpx;
+	}
+	
+	.pagination-controls button:disabled {
+		background: #bdc3c7;
+	}
+	
+	.page-numbers {
+		display: flex;
+		gap: 10rpx;
+		margin: 0 20rpx;
+	}
+	
+	.page-numbers button {
+		background: #ecf0f1;
+		color: #2c3e50;
+		border: 1rpx solid #bdc3c7;
+		padding: 10rpx 15rpx;
+		border-radius: 6rpx;
+		font-size: 26rpx;
+	}
+	
+	.page-numbers button.active {
+		background: #3498db;
+		color: white;
+		border-color: #3498db;
 	}
 }
 </style>

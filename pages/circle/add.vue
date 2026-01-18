@@ -32,8 +32,16 @@
 						<!-- 群分类 -->
 						<view class="form-item">
 							<text class="label">群分类 *</text>
-							<picker @change="onCategoryChange" :value="categoryIndex" :range="categoriesList" range-key="name">
+							<picker @change="onCategoryChange" :value="categoryIndex" :range="categoriesList" range-key="text">
 								<view class="picker">{{ formData.category_id ? selectedCategoryName : '请选择分类' }}</view>
+							</picker>
+						</view>
+						
+						<!-- 群类型 -->
+						<view class="form-item">
+							<text class="label">群类型 *</text>
+							<picker @change="onGroupTypeChange" :value="groupTypeIndex" :range="groupTypeList" range-key="name">
+								<view class="picker">{{ formData.group_type ? selectedGroupTypeName : '请选择群类型' }}</view>
 							</picker>
 						</view>
 						
@@ -148,6 +156,8 @@ export default {
 			tagInput: '',
 			categoriesList: [], // 分类列表
 			categoryIndex: 0,
+			groupTypeList: [], // 群类型列表
+			groupTypeIndex: 0,
 			submitting: false,
 			userInfo: {}, // 用户信息
 			showUserMenu: false // 是否显示用户菜单
@@ -155,8 +165,12 @@ export default {
 	},
 	computed: {
 		selectedCategoryName() {
-			const category = this.categoriesList.find(cat => cat._id === this.formData.category_id);
-			return category ? category.name : '请选择分类';
+			const category = this.categoriesList.find(cat => cat.value === this.formData.category_id);
+			return category ? category.text : '请选择分类';
+		},
+		selectedGroupTypeName() {
+			const groupType = this.groupTypeList.find(type => type._id === this.formData.group_type);
+			return groupType ? groupType.name : '请选择群类型';
 		}
 	},
 	onLoad() {
@@ -176,9 +190,26 @@ export default {
 		
 		// 加载分类列表
 		this.loadCategories();
+		// 初始化群类型列表
+		this.initGroupTypes();
 		
 		// 更新用户信息显示
 		this.updateUserInfoDisplay();
+	},
+	
+	// 初始化群类型列表
+	initGroupTypes() {
+		this.groupTypeList = [
+			{ _id: 'qq', name: 'QQ群' },
+			{ _id: 'weixin', name: '微信群' }
+		];
+	},
+	
+	// 选择群类型
+	onGroupTypeChange(e) {
+		const index = e.detail.value;
+		this.groupTypeIndex = index;
+		this.formData.group_type = this.groupTypeList[index]._id;
 	},
 	onUnload() {
 		// 移除事件监听
@@ -231,12 +262,12 @@ export default {
 				console.error('加载分类列表失败', e);
 				// 如果加载失败，提供一些默认分类作为后备
 				this.categoriesList = [
-					{ _id: 'frontend', name: '前端开发' }, 
-					{ _id: 'backend', name: '后端开发' }, 
-					{ _id: 'mobile', name: '移动端' },
-					{ _id: 'ai', name: '人工智能' },
-					{ _id: 'devops', name: '运维' },
-					{ _id: 'other', name: '其他' }
+					{ value: 'frontend', text: '前端开发' }, 
+					{ value: 'backend', text: '后端开发' }, 
+					{ value: 'mobile', text: '移动端' },
+					{ value: 'ai', text: '人工智能' },
+					{ value: 'devops', text: '运维' },
+					{ value: 'other', text: '其他' }
 				];
 			}
 		},
@@ -244,7 +275,7 @@ export default {
 		onCategoryChange(e) {
 			const index = e.detail.value;
 			this.categoryIndex = index;
-			this.formData.category_id = this.categoriesList[index]._id;
+			this.formData.category_id = this.categoriesList[index].value;
 		},
 		// 选择群二维码
 		chooseQrCode() {
@@ -360,6 +391,14 @@ export default {
 				return;
 			}
 			
+			if (!this.formData.group_type) {
+				uni.showToast({
+					icon: 'none',
+					title: '请选择群类型'
+				});
+				return;
+			}
+			
 			// 检查登录状态
 			if (!this.checkLoginStatus()) {
 				return;
@@ -370,17 +409,22 @@ export default {
 			try {
 				// 准备数据
 				const submitData = {
-					...this.formData,
-					creator_id: this.userInfo._id,
-					creator_nickname: this.userInfo.nickname || this.userInfo.username || this.userInfo.mobile || this.userInfo.email,
-					creator_avatar: this.userInfo.avatar,
-					create_time: Date.now()
+					title: this.formData.title,
+					group_type: this.formData.group_type, // 使用表单中的群类型值
+					description: this.formData.description,
+					qr_code: this.formData.qr_code,
+					owner_nickname: this.formData.owner_nickname,
+					owner_contact: this.formData.owner_contact,
+					owner_qr_code: this.formData.owner_qr_code,
+					tags: this.formData.tags,
+					remark: this.formData.remark,
+					category_id: this.formData.category_id
 				};
 				
 				// 调用云函数提交数据
 				const result = await uniCloud.callFunction({
 					name: 'create-circle',
-					params: submitData
+					data: submitData
 				});
 				
 				console.log('提交结果:', result);

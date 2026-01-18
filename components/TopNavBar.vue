@@ -23,24 +23,27 @@
 						<text class="search-text">搜索</text>
 					</button>
 					<view class="user-section">
-						<!-- 发布文章按钮，仅在用户登录时显示 -->
-						<view v-if="isLoggedIn" class="publish-btn" @click="goToPublishArticle">
-							<uni-icons type="compose" size="20" color="#fff"></uni-icons>
-							<text class="publish-text">发布</text>
-						</view>
-						<view v-if="isLoggedIn" class="user-profile" @click="toggleUserMenu">
-							<image v-if="userInfo.avatar_file" class="avatar" :src="userInfo.avatar_file.url" mode="aspectFill"></image>
-							<image v-else class="avatar" src="/static/logo.png" mode="aspectFill"></image>
-							<text class="username">{{ userInfo.nickname || userInfo.username || userInfo.mobile || userInfo.email }}</text>
-							<uni-icons class="arrowdown" type="arrowdown" color="#666" size="13"></uni-icons>
-						</view>
-						<!-- 用户菜单，只在用户登录且菜单打开时显示 -->
-						<view v-if="showUserMenu && isLoggedIn" class="user-menu" @click.stop="closeUserMenu">
-							<view class="menu-item" @click="goToUserProfile">
-								<text>个人主页</text>
+						<!-- 登录状态下显示发布按钮和用户信息，未登录状态下显示登录注册按钮 -->
+						<view v-if="isLoggedIn">
+							<!-- 发布文章按钮，仅在用户登录时显示 -->
+							<view class="publish-btn" @click="goToPublishArticle">
+								<uni-icons type="compose" size="20" color="#fff"></uni-icons>
+								<text class="publish-text">发布</text>
 							</view>
-							<view class="menu-item" @click="handleLogout">
-								<text>退出登录</text>
+							<view class="user-profile" @click="toggleUserMenu">
+								<image v-if="userInfo.avatar_file" class="avatar" :src="userInfo.avatar_file.url" mode="aspectFill"></image>
+								<image v-else class="avatar" src="/static/logo.png" mode="aspectFill"></image>
+								<text class="username">{{ userInfo.nickname || userInfo.username || userInfo.mobile || userInfo.email }}</text>
+								<uni-icons class="arrowdown" type="arrowdown" color="#666" size="13"></uni-icons>
+							</view>
+							<!-- 用户菜单，只在用户登录且菜单打开时显示 -->
+							<view v-if="showUserMenu && isLoggedIn" class="user-menu" @click.stop="closeUserMenu">
+								<view class="menu-item" @click="goToUserProfile">
+									<text>个人主页</text>
+								</view>
+								<view class="menu-item" @click="handleLogout">
+									<text>退出登录</text>
+								</view>
 							</view>
 						</view>
 						<view v-else class="login-register-buttons">

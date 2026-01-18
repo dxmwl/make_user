@@ -23,7 +23,7 @@
 				<view class="detail-content" v-if="circleDetail">
 					<!-- 交流圈基本信息 -->
 					<view class="circle-basic-info">
-						<view class="circle-title">{{ circleDetail.title }}</view>
+						<view class="circle-title">{{ circleDetail.group_name }}</view>
 						<view class="circle-meta">
 							<image class="avatar" :src="circleDetail.creator_avatar || '/static/logo.png'" mode="aspectFill"></image>
 							<view class="creator-info">
@@ -32,7 +32,15 @@
 							</view>
 						</view>
 						<view class="circle-description">
-							<text>{{ circleDetail.description }}</text>
+							<text>{{ circleDetail.group_description }}</text>
+						</view>
+						<view class="circle-category" v-if="circleDetail.category_name">
+							<text class="category-label">分类:</text>
+							<text class="category-name">{{ circleDetail.category_name }}</text>
+						</view>
+						<view class="circle-type" v-if="circleDetail.group_type">
+							<text class="type-label">类型:</text>
+							<text class="type-name">{{ getGroupTypeName(circleDetail.group_type) }}</text>
 						</view>
 						<view class="circle-tags">
 							<text class="tag" v-for="(tag, idx) in circleDetail.tags" :key="idx">{{ tag }}</text>
@@ -148,7 +156,7 @@ export default {
 			try {
 				const result = await uniCloud.callFunction({
 					name: 'get-circle-detail',
-					params: {
+					data: {
 						id: this.id
 					}
 				});
@@ -169,8 +177,8 @@ export default {
 				// 使用静态数据作为后备
 				console.warn('使用静态数据作为后备');
 				this.circleDetail = {
-					title: '前端开发交流群',
-					description: '专注前端技术交流，包含Vue、React、Angular等框架讨论，欢迎各位前端爱好者加入！',
+					group_name: '前端开发交流群',
+					group_description: '专注前端技术交流，包含Vue、React、Angular等框架讨论，欢迎各位前端爱好者加入！',
 					creator_nickname: '前端小王',
 					creator_avatar: '/static/logo.png',
 					create_time: new Date().getTime(),
@@ -375,6 +383,14 @@ export default {
 					plus.runtime.openWeb(url);
 				}
 			}
+		},
+		// 获取群类型名称
+		getGroupTypeName(groupType) {
+			const groupTypeMap = {
+				'qq': 'QQ群',
+				'weixin': '微信群'
+			};
+			return groupTypeMap[groupType] || groupType;
 		}
 	}
 }
@@ -684,7 +700,43 @@ page {
 	line-height: 1.6;
 	margin-bottom: 20rpx;
 }
-
+	
+.circle-category {
+	margin-bottom: 15rpx;
+	display: flex;
+	align-items: center;
+	font-size: 26rpx;
+	color: #7f8c8d;
+}
+	
+.category-label {
+	color: #95a5a6;
+	margin-right: 5rpx;
+}
+	
+.category-name {
+	color: #3498db;
+	font-weight: bold;
+}
+	
+.circle-type {
+		margin-bottom: 15rpx;
+		display: flex;
+		align-items: center;
+		font-size: 26rpx;
+		color: #7f8c8d;
+	}
+	
+	.type-label {
+		color: #95a5a6;
+		margin-right: 5rpx;
+	}
+	
+	.type-name {
+		color: #e74c3c;
+		font-weight: bold;
+	}
+	
 .circle-tags {
 	display: flex;
 	flex-wrap: wrap;
