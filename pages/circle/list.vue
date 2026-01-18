@@ -52,11 +52,9 @@
 				<view class="loading-container" v-if="loading">
 					<uni-load-more status="loading"></uni-load-more>
 				</view>
-				<view class="no-more" v-else-if="!hasMore && circleList.length > 0">
-					<text>没有更多交流圈了</text>
-				</view>
+
 				<!-- 分页组件 -->
-				<view class="pagination-container" v-if="totalPages > 1">
+				<view class="pagination-container" >
 					<view class="pagination-info">
 						第 {{ currentPage }} 页，共 {{ totalPages }} 页，总计 {{ total }} 条
 					</view>
@@ -507,6 +505,10 @@ page {
 		width: 60%; /* PC端改为60%宽度，参考记忆配置 */
 		padding: 15rpx 50rpx;
 	}
+	
+	.circle-grid {
+		grid-template-columns: repeat(5, 1fr); /* 每行显示5个项目 */
+	}
 }
 
 .logo-section {
@@ -761,7 +763,7 @@ page {
 
 .circle-grid {
 	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(300rpx, 1fr));
+	grid-template-columns: repeat(5, 1fr); /* 固定显示5列 */
 	gap: 20rpx;
 	width: 100%;
 }
@@ -788,8 +790,8 @@ page {
 }
 
 .circle-header .avatar {
-	width: 60rpx;
-	height: 60rpx;
+	width: 80rpx;
+	height: 80rpx;
 	border-radius: 50%;
 	margin-right: 15rpx;
 }
@@ -800,7 +802,7 @@ page {
 
 .creator-name {
 	display: block;
-	font-size: 28rpx;
+	font-size: 32rpx; /* 增大昵称字体 */
 	font-weight: bold;
 	color: #2c3e50;
 }
@@ -1000,7 +1002,7 @@ page {
 	}
 	
 	.circle-grid {
-		grid-template-columns: 1fr; /* 移动端单列显示 */
+		grid-template-columns: repeat(5, 1fr); /* 固定显示5列 */
 	}
 	
 	.footer-content {

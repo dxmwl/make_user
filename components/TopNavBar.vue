@@ -23,13 +23,8 @@
 						<text class="search-text">搜索</text>
 					</button>
 					<view class="user-section">
-						<!-- 登录状态下显示发布按钮和用户信息，未登录状态下显示登录注册按钮 -->
+						<!-- 登录状态下显示用户信息，未登录状态下显示登录注册按钮 -->
 						<view v-if="isLoggedIn">
-							<!-- 发布文章按钮，仅在用户登录时显示 -->
-							<view class="publish-btn" @click="goToPublishArticle">
-								<uni-icons type="compose" size="20" color="#fff"></uni-icons>
-								<text class="publish-text">发布</text>
-							</view>
 							<view class="user-profile" @click="toggleUserMenu">
 								<image v-if="userInfo.avatar_file" class="avatar" :src="userInfo.avatar_file.url" mode="aspectFill"></image>
 								<image v-else class="avatar" src="/static/logo.png" mode="aspectFill"></image>
@@ -38,6 +33,10 @@
 							</view>
 							<!-- 用户菜单，只在用户登录且菜单打开时显示 -->
 							<view v-if="showUserMenu && isLoggedIn" class="user-menu" @click.stop="closeUserMenu">
+								<view class="menu-item" @click="goToPublishArticle">
+									<uni-icons type="compose" size="16" color="#555" style="margin-right: 8px;"></uni-icons>
+									<text>发布文章</text>
+								</view>
 								<view class="menu-item" @click="goToUserProfile">
 									<text>个人主页</text>
 								</view>
@@ -353,26 +352,6 @@ export default {
 	align-items: center;
 }
 
-.publish-btn {
-	display: flex;
-	align-items: center;
-	padding: 8rpx 16rpx;
-	border-radius: 30rpx;
-	background: #3498db;
-	color: white;
-	font-size: 26rpx;
-	cursor: pointer;
-	margin-right: 10rpx;
-}
-
-.publish-btn:hover {
-	background: #2980b9;
-}
-
-.publish-text {
-	margin-left: 5rpx;
-}
-
 .user-profile {
 	display: flex;
 	align-items: center;
@@ -390,14 +369,16 @@ export default {
 }
 
 .avatar {
-	width: 40rpx;
-	height: 40rpx;
+	width: 80rpx;
+	height: 80rpx;
 	border-radius: 50%;
 	margin-right: 10rpx;
 }
 
 .username {
-	max-width: 120rpx;
+    margin-left: 15rpx;
+	font-size: 28rpx;
+	max-width: 140rpx;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
@@ -410,10 +391,12 @@ export default {
 }
 
 .user-menu {
+    padding: 15rpx;
 	position: absolute;
 	right: 0;
 	top: calc(100% + 5rpx);
-	width: 150rpx;
+	min-width: 150rpx; /* 最小宽度保持150rpx */
+	width: 300rpx; /* 自适应宽度 */
 	background-color: #fff;
 	border: 1rpx solid #ebeef5;
 	border-radius: 4rpx;
@@ -468,45 +451,55 @@ export default {
 	background: #2980b9;
 }
 
-/* 响应式设计 */
+/* 响应式设计 - 修改为在小屏幕上也能保持水平排列 */
 @media (max-width: 768px) {
 	.header-content {
-		flex-direction: column;
+		display: flex;
+		flex-direction: row;
+		justify-content: flex-start;
 		gap: 20rpx;
-		padding: 20rpx;
-		width: 90%; /* 移动端稍宽一些 */
+		padding: 10rpx 20rpx;
+		width: 100%;
+		flex-wrap: wrap;
 	}
 	
 	.logo-section {
-		justify-content: center;
+		flex: unset;
 	}
 	
 	.nav-section {
-		flex-direction: column;
-		align-items: flex-start;
-		gap: 15rpx;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		flex: 1;
+		flex-wrap: wrap;
 	}
 	
 	.nav-menu {
-		flex-direction: column;
+		display: flex;
+		flex-direction: row;
+		flex-wrap: wrap;
 		gap: 10rpx;
-		width: 100%;
 	}
 	
 	.nav-menu li {
-		justify-content: center;
-		padding: 15rpx;
+		padding: 8rpx 12rpx;
+		font-size: 24rpx;
 	}
 	
 	.nav-actions {
-		width: 100%;
-		justify-content: center;
+		display: flex;
+		align-items: center;
 		gap: 10rpx;
 	}
 	
 	.search-button {
-		width: 100%;
-		justify-content: center;
+		padding: 8rpx 12rpx;
+		font-size: 24rpx;
+	}
+	
+	.user-section {
+		margin-left: 10rpx;
 	}
 }
 </style>
