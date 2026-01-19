@@ -171,14 +171,7 @@
 				"navigationStyle": "custom"
 			}
 		},
-		{
-			"path": "uni_modules/uni-id-pages/pages/login/login-smscode",
-			"style": {
-				"navigationBarTitleText": "手机验证码登录",
-				"enablePullDownRefresh": false,
-				"navigationStyle": "custom"
-			}
-		},
+
 		{
 			"path": "uni_modules/uni-id-pages/pages/register/register",
 			"style": {

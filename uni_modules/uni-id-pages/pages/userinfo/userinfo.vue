@@ -1,4 +1,4 @@
-<!-- 用户资料页 -->
+<!-- User资料页 -->
 <template>
 	<view class="uni-content">
 		<view class="avatar">
@@ -249,6 +249,19 @@ const uniIdCo = uniCloud.importObject("uni-id-co")
 		justify-content: center;
 		margin: 22px 0;
 		width: 100%;
+		max-width: 300rpx; /* 限制最大宽度 */
+		margin: 22px auto; /* 居中对齐 */
+	}
+	
+	.avatar ::v-deep .box,
+	.avatar ::v-deep image,
+	.avatar ::v-deep .chooseAvatar {
+		border-radius: 50% !important; /* 设置为圆形 */
+		width: 100% !important;
+		height: 100% !important;
+		max-width: 100%;
+		max-height: 100%;
+		object-fit: cover;
 	}
 
 	.item {

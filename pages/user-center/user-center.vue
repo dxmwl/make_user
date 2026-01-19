@@ -137,6 +137,13 @@ export default {
 									title: '退出成功',
 									icon: 'success'
 								})
+								
+								// 跳转到登录页面
+								setTimeout(() => {
+									uni.redirectTo({
+										url: '/uni_modules/uni-id-pages/pages/login/login-withpwd'
+									})
+								}, 1000)
 							} else {
 								uni.showToast({
 									title: logoutRes.errMsg || '退出失败',

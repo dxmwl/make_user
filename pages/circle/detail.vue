@@ -1,20 +1,6 @@
 <template>
 	<view class="circle-detail">
-		<Header 
-			:active-tab="'circle'"
-			:is-logged-in="isLoggedIn"
-			:user-info="userInfo"
-			:show-user-menu="showUserMenu"
-			@switchTab="switchTab"
-			@goToSearchPage="goToSearchPage"
-			@goToPublishArticle="goToPublishArticle"
-			@toggleUserMenu="toggleUserMenu"
-			@goToLogin="goToLogin"
-			@goToRegister="goToRegister"
-			@goToUserProfile="goToUserProfile"
-			@logout="logout"
-			@closeUserMenu="closeUserMenu"
-		/>
+		<TopNavBar/>
 		
 		<!-- 主要内容区域 -->
 		<view class="main-container">
@@ -100,7 +86,7 @@
 
 <script>
 import translatePublishTime from '@/uni_modules/uni-cms-article/common/publish-time';
-import Header from '@/pages/components/Header.vue';
+import TopNavBar from '@/components/TopNavBar.vue';
 import Footer from '@/pages/components/Footer.vue';
 
 const db = uniCloud.database();
@@ -109,7 +95,7 @@ const userDBName = 'uni-id-users';
 
 export default {
 	components: {
-		Header,
+		TopNavBar,
 		Footer
 	},
 	data() {
@@ -344,7 +330,11 @@ export default {
 			this.isLoggedIn = false;
 			this.userInfo = {};
 			this.showUserMenu = false;
-			// 不需要跳转页面，只需更新状态
+			
+			// 跳转到登录页面
+			uni.redirectTo({
+				url: '/uni_modules/uni-id-pages/pages/login/login-withpwd'
+			})
 		},
 		// 跳转到登录页面
 		goToLogin() {

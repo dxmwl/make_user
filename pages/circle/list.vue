@@ -477,7 +477,11 @@ export default {
 			this.isLoggedIn = false;
 			this.userInfo = {};
 			this.showUserMenu = false;
-			// 不需要跳转页面，只需更新状态
+			
+			// 跳转到登录页面
+			uni.redirectTo({
+				url: '/uni_modules/uni-id-pages/pages/login/login-withpwd'
+			})
 		},
 		// 跳转到登录页面
 		goToLogin() {

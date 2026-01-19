@@ -39,9 +39,11 @@
 							<!-- 用户菜单，只在用户登录且菜单打开时显示 -->
 							<view v-if="showUserMenu && isLoggedIn" class="user-menu" @click.stop="closeUserMenu">
 								<view class="menu-item" @click="goToUserProfile">
-									<text>个人主页</text>
+									<uni-icons type="person" size="16" color="#555" style="margin-right: 8px;"></uni-icons>
+									<text>个人资料</text>
 								</view>
 								<view class="menu-item" @click="logout">
+									<uni-icons type="close" size="16" color="#555" style="margin-right: 8px;"></uni-icons>
 									<text>退出登录</text>
 								</view>
 							</view>
@@ -58,8 +60,13 @@
 </template>
 
 <script>
+import uniIcons from '@/uni_modules/uni-icons/components/uni-icons/uni-icons.vue';
+
 export default {
 	name: 'Header',
+	components: {
+		uniIcons
+	},
 	props: {
 		activeTab: {
 			type: String,

@@ -10,7 +10,7 @@ Disallow: /.git/
 Allow: /
 
 # Sitemap
-Sitemap: https://mk.dxmwl.com/sitemap.xml
+Sitemap: https://make.dxmwl.com/sitemap.xml
 
 # 禁止抓取特定类型的文件
 Disallow: /*.log$

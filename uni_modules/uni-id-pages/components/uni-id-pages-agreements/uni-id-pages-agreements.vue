@@ -93,12 +93,26 @@
 				url,
 				title
 			}) {
-				uni.navigateTo({
-					url: '/uni_modules/uni-id-pages/pages/common/webview/webview?url=' + url + '&title=' + title,
-					success: res => {},
-					fail: () => {},
-					complete: () => {}
-				});
+				// 检查是否为外部链接（HTTP/HTTPS）
+				if (url.startsWith('http://') || url.startsWith('https://')) {
+					// 外部链接使用webview打开
+					uni.navigateTo({
+						url: '/uni_modules/uni-id-pages/pages/common/webview/webview?url=' + url + '&title=' + title,
+						success: res => {},
+						fail: () => {},
+						complete: () => {}
+					});
+				} else {
+					// 本地页面路径直接跳转
+					uni.navigateTo({
+						url: url,
+						success: res => {},
+						fail: (err) => {
+							console.error('跳转协议页面失败:', err);
+						},
+						complete: () => {}
+					});
+				}
 			},
 			hasAnd(agreements, index) {
 				return agreements.length - 1 > index

@@ -33,9 +33,11 @@
 						<!-- 用户菜单，只在用户登录且菜单打开时显示 -->
 						<view v-if="showUserMenu && isLoggedIn" class="user-menu" @click.stop="closeUserMenu">
 							<view class="menu-item" @click="goToUserProfile">
-								<text>个人主页</text>
+								<uni-icons type="person" size="16" color="#555" style="margin-right: 8px;"></uni-icons>
+								<text>个人资料</text>
 							</view>
 							<view class="menu-item" @click="logout">
+								<uni-icons type="close" size="16" color="#555" style="margin-right: 8px;"></uni-icons>
 								<text>退出登录</text>
 							</view>
 						</view>
@@ -689,7 +691,11 @@ export default {
 			this.isLoggedIn = false;
 			this.userInfo = {};
 			this.showUserMenu = false;
-			// 不需要跳转页面，只需更新状态
+			
+			// 跳转到登录页面
+			uni.redirectTo({
+				url: '/uni_modules/uni-id-pages/pages/login/login-withpwd'
+			})
 		},
 		// 跳转到发布文章页面
 		goToPublishArticle() {

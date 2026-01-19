@@ -42,9 +42,11 @@
 									<text>我的交流圈</text>
 								</view>
 								<view class="menu-item" @click="goToUserProfile">
-									<text>个人主页</text>
+									<uni-icons type="person" size="16" color="#555" style="margin-right: 8px;"></uni-icons>
+									<text>个人资料</text>
 								</view>
 								<view class="menu-item" @click="handleLogout">
+									<uni-icons type="close" size="16" color="#555" style="margin-right: 8px;"></uni-icons>
 									<text>退出登录</text>
 								</view>
 							</view>

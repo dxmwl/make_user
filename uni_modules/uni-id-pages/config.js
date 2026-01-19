@@ -7,8 +7,7 @@ export default {
 	*/
 	"isAdmin": false, // 区分管理端与用户端
 	"loginTypes": [
-		"username",
-		"smsCode"
+		"username"
 	],
 	//政策协议
 	"agreements": {

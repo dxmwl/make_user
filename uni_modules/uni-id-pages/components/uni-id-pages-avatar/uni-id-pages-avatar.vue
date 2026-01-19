@@ -1,6 +1,6 @@
 <template>
 	<button open-type="chooseAvatar" @chooseavatar="bindchooseavatar" @click="uploadAvatarImg" class="box" :class="{'showBorder':border}"  :style="{width,height,lineHeight:height}">
-		<cloud-image v-if="avatar_file" :src="avatar_file.url" :width="width" :height="height"></cloud-image>
+		<cloud-image v-if="avatar_file" :src="avatar_file.url" :width="width" :height="height" mode="aspectFill"></cloud-image>
 		<uni-icons v-else :style="{width,height,lineHeight:height}" class="chooseAvatar" type="plusempty" size="30"
 			color="#dddddd"></uni-icons>
 	</button>
@@ -177,10 +177,17 @@
 	/* #ifndef APP-NVUE */
 	.box{
 		overflow: hidden;
+		border-radius: 50%; /* 设置为圆形 */
+		max-width: 100%;
+		max-height: 100%;
 	}
 	/* #endif */
 	.box{
 		padding: 0;
+		border-radius: 50%; /* 设置为圆形 */
+		max-width: 100%;
+		max-height: 100%;
+		object-fit: cover;
 	}
 	
 	.chooseAvatar {
@@ -188,9 +195,12 @@
 		display: inline-block;
 		box-sizing: border-box;
 		/* #endif */
-		border-radius: 10px;
+		border-radius: 50%; /* 设置为圆形 */
 		text-align: center;
 		padding: 1px;
+		max-width: 100%;
+		max-height: 100%;
+		object-fit: cover;
 	}
 	.showBorder{
 		border: solid 1px #ddd;
