@@ -893,6 +893,7 @@ page {
 }
 
 .input {
+	height: auto;
 	width: 100%;
 	padding: 15rpx;
 	border: 1rpx solid #ddd;
