@@ -128,7 +128,8 @@ export default {
 			groupTypeIndex: 0,
 			groupTypes: [
 				{ value: 'qq', text: 'QQ群' },
-				{ value: 'weixin', text: '微信群' }
+				{ value: 'weixin', text: '微信群' },
+				{ value: 'xiaohongshu', text: '小红书' }
 			], // 群类型选项
 			submitting: false,
 			userInfo: {}, // 用户信息
@@ -145,6 +146,8 @@ export default {
 				return 'QQ群';
 			} else if (this.formData.group_type === 'weixin') {
 				return '微信群';
+			} else if (this.formData.group_type === 'xiaohongshu') {
+				return '小红书';
 			}
 			return '请选择群类型';
 		}

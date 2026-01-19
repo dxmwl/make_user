@@ -127,7 +127,8 @@ export default {
 			groupTypeIndex: 0,
 			groupTypes: [
 				{ value: 'qq', text: 'QQ群' },
-				{ value: 'weixin', text: '微信群' }
+				{ value: 'weixin', text: '微信群' },
+				{ value: 'xiaohongshu', text: '小红书' }
 			], // 群类型选项
 			submitting: false,
 			userInfo: {}, // 用户信息
@@ -198,7 +199,8 @@ export default {
 			console.log('初始化群类型列表...');
 			this.groupTypeList = [
 				{ _id: 'qq', name: 'QQ群' },
-				{ _id: 'weixin', name: '微信群' }
+				{ _id: 'weixin', name: '微信群' },
+				{ _id: 'xiaohongshu', name: '小红书' }
 			];
 			console.log('群类型列表:', this.groupTypeList);
 		},

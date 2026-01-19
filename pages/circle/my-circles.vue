@@ -46,7 +46,7 @@
 				<view class="circle-footer">
 					<view class="group-type">
 						<uni-icons type="chat" size="14" color="#999"></uni-icons>
-						<text class="group-text">{{ item.group_type === 'weixin' ? '微信群' : (item.group_type === 'qq' ? 'QQ群' : '') }}</text>
+						<text class="group-text">{{ item.group_type === 'weixin' ? '微信群' : (item.group_type === 'qq' ? 'QQ群' : (item.group_type === 'xiaohongshu' ? '小红书' : '')) }}</text>
 					</view>
 					
 					<!-- 分类标签 -->

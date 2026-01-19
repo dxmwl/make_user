@@ -356,7 +356,8 @@ export default {
 		getGroupTypeName(groupType) {
 			const groupTypeMap = {
 				'qq': 'QQ群',
-				'weixin': '微信群'
+				'weixin': '微信群',
+				'xiaohongshu': '小红书'
 			};
 			return groupTypeMap[groupType] || groupType;
 		},
