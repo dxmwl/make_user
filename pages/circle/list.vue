@@ -2,13 +2,28 @@
 	<view class="circle-list">
 		<TopNavBar />
 		
+		<!-- 搜索栏 -->
+		<view class="search-section">
+			<view class="search-container">
+				<uni-icons type="search" size="20" color="#999" class="search-icon"></uni-icons>
+				<input 
+					type="text" 
+					placeholder="搜索交流圈名称或描述..." 
+					v-model="searchKeyword" 
+					@confirm="performSearch"
+					class="search-input">
+				<view v-if="searchKeyword" class="clear-btn" @click="clearSearch">×</view>
+				<button class="search-btn" @click="performSearch">搜索</button>
+			</view>
+		</view>
+		
 		<!-- 分类导航 -->
 		<view class="category-nav">
 			<scroll-view scroll-x="true" class="category-scroll">
 				<view class="category-item" 
 					v-for="(category, index) in categoriesList" 
 					:key="category.value"
-					:class="{ active: activeCategory === category.value }"
+					:class="{ active: activeCategory === category.value || (activeCategory === 'all' && !searchKeyword) }"
 					@click="changeCategory(category.value)">
 					<text>{{ category.text }}</text>
 				</view>
@@ -100,7 +115,10 @@ export default {
 			loading: false,
 			isLoggedIn: false, // 是否已登录
 			userInfo: {}, // 用户信息
-			showUserMenu: false // 是否显示用户菜单
+			showUserMenu: false, // 是否显示用户菜单
+			searchKeyword: '', // 搜索关键词
+			isSearching: false, // 是否处于搜索状态
+			originalCategory: 'all' // 保存原始分类，以便取消搜索时恢复
 		}
 	},
 	onLoad() {
@@ -157,7 +175,8 @@ export default {
 					data: {
 						category_id: this.activeCategory,
 						page: this.currentPage,
-						pageSize: this.pageSize
+						pageSize: this.pageSize,
+						keyword: this.searchKeyword
 					}
 				});
 				
@@ -252,6 +271,10 @@ export default {
 		},
 		// 切换分类
 		changeCategory(categoryId) {
+			// 如果当前处于搜索状态，点击分类应该先清空搜索
+			if (this.isSearching) {
+				this.clearSearch();
+			}
 			this.activeCategory = categoryId;
 			this.currentPage = 1; // 重置到第一页
 			this.total = 0; // 重置总数
@@ -371,6 +394,36 @@ export default {
 			}
 			
 			return pages;
+		},
+		
+		// 执行搜索
+		performSearch() {
+			if (this.searchKeyword.trim() === '') {
+				// 如果搜索关键词为空，返回所有结果
+				this.isSearching = false;
+				this.activeCategory = this.originalCategory;
+			} else {
+				this.isSearching = true;
+				this.originalCategory = this.activeCategory; // 保存当前分类
+				this.activeCategory = 'all'; // 搜索时暂时切换到全部分类
+			}
+			this.currentPage = 1;
+			this.total = 0;
+			this.totalPages = 0;
+			this.circleList = [];
+			this.loadCircles();
+		},
+		
+		// 清空搜索
+		clearSearch() {
+			this.searchKeyword = '';
+			this.isSearching = false;
+			this.activeCategory = this.originalCategory;
+			this.currentPage = 1;
+			this.total = 0;
+			this.totalPages = 0;
+			this.circleList = [];
+			this.loadCircles();
 		},
 		// 处理分页变化
 		handlePageChange(e) {
@@ -697,6 +750,71 @@ page {
 }
 
 .register-btn:hover {
+	background: #2980b9;
+}
+
+.search-section {
+	background: #fff;
+	padding: 20rpx 0;
+	display: flex;
+	justify-content: center;
+}
+
+.search-container {
+	display: flex;
+	align-items: center;
+	width: 80%;
+	padding: 15rpx 20rpx;
+	background: #f8f9fa;
+	border-radius: 30rpx;
+	border: 1rpx solid #e9ecef;
+}
+
+/* 桌面端样式调整 */
+@media screen and (min-width: 768px) {
+	.search-container {
+		width: 60%; /* PC端改为60%宽度，参考记忆配置 */
+	}
+}
+
+.search-icon {
+	margin-right: 10rpx;
+}
+
+.search-input {
+	flex: 1;
+	padding: 10rpx;
+	font-size: 28rpx;
+	outline: none;
+	border: none;
+	background: transparent;
+}
+
+.clear-btn {
+	width: 40rpx;
+	height: 40rpx;
+	margin: 0 10rpx;
+	text-align: center;
+	line-height: 40rpx;
+	font-size: 32rpx;
+	color: #999;
+	cursor: pointer;
+	background: #e9ecef;
+	border-radius: 50%;
+}
+
+.search-btn {
+	margin-left: 10rpx;
+	padding: 10rpx 20rpx;
+	background: #3498db;
+	color: white;
+	border: none;
+	border-radius: 20rpx;
+	font-size: 26rpx;
+	cursor: pointer;
+}
+
+.search-btn:active {
 	background: #2980b9;
 }
 

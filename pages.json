@@ -47,6 +47,20 @@
 			}
 		},
 		{
+			"path": "pages/terms/terms",
+			"style": {
+				"navigationBarTitleText": "用户服务协议",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/privacy/privacy",
+			"style": {
+				"navigationBarTitleText": "隐私政策条款",
+				"navigationStyle": "custom"
+			}
+		},
+		{
 			"path": "pages/circle/list",
 			"style": {
 				"navigationBarTitleText": "交流圈",

@@ -12,8 +12,8 @@ export default {
 	],
 	//政策协议
 	"agreements": {
-		"serviceUrl": "", //用户服务协议链接
-		"privacyUrl": "", //隐私政策条款链接
+		"serviceUrl": "/pages/terms/terms", //用户服务协议链接
+		"privacyUrl": "/pages/privacy/privacy", //隐私政策条款链接
 		// 哪些场景下显示，1.注册（包括登录并注册，如：微信登录、苹果登录、短信验证码登录）、2.登录（如：用户名密码登录）
 		"scope": [
 			'register', 'login'
