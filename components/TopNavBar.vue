@@ -37,6 +37,10 @@
 									<uni-icons type="compose" size="16" color="#555" style="margin-right: 8px;"></uni-icons>
 									<text>发布文章</text>
 								</view>
+								<view class="menu-item" @click="goToMyCircles">
+									<uni-icons type="chatboxes" size="16" color="#555" style="margin-right: 8px;"></uni-icons>
+									<text>我的交流圈</text>
+								</view>
 								<view class="menu-item" @click="goToUserProfile">
 									<text>个人主页</text>
 								</view>
@@ -216,6 +220,13 @@ export default {
 		goToUserProfile() {
 			uni.navigateTo({
 				url: '/uni_modules/uni-id-pages/pages/userinfo/userinfo'
+			});
+		},
+		
+		// 前往我的交流圈页面
+		goToMyCircles() {
+			uni.navigateTo({
+				url: '/pages/circle/my-circles'
 			});
 		}
 	},

@@ -1,12 +1,12 @@
 <template>
-	<view class="circle-add">
+	<view class="circle-edit">
 		<TopNavBar />
 		
 		<!-- 主要内容区域 -->
 		<view class="main-container">
 			<view class="container">
 				<view class="form-container">
-					<view class="form-title">发布交流圈</view>
+					<view class="form-title">编辑交流圈</view>
 					
 					<form @submit="submitForm">
 						<!-- 群名称 -->
@@ -80,8 +80,8 @@
 						
 						<!-- 提交按钮 -->
 						<view class="submit-section">
-							<button class="cancel-btn" @click="goToCircleList">取消</button>
-							<button class="submit-btn" form-type="submit" :disabled="submitting">{{ submitting ? '提交中...' : '发布' }}</button>
+							<button class="cancel-btn" @click="goBack">返回</button>
+							<button class="submit-btn" form-type="submit" :disabled="submitting">{{ submitting ? '提交中...' : '保存' }}</button>
 						</view>
 					</form>
 				</view>
@@ -108,15 +108,16 @@ export default {
 	},
 	data() {
 		return {
+			id: '', // 交流圈ID
 			formData: {
 				title: '',
 				category_id: '',
-				group_type: '',
 				description: '',
 				qr_code: '',
 				owner_nickname: '',
 				owner_contact: '',
 				owner_qr_code: '',
+				group_type: '',
 				creator_id: '', // 添加创建者ID
 				creator_nickname: '', // 添加创建者昵称
 				creator_avatar: '' // 添加创建者头像
@@ -140,7 +141,6 @@ export default {
 			return category ? category.text : '请选择分类';
 		},
 		selectedGroupTypeName() {
-			console.log('selectedGroupTypeName:', this.formData.group_type);
 			if (this.formData.group_type === 'qq') {
 				return 'QQ群';
 			} else if (this.formData.group_type === 'weixin') {
@@ -149,8 +149,14 @@ export default {
 			return '请选择群类型';
 		}
 	},
-	onLoad() {
-		console.log("当前登录用户id",uniCloud.getCurrentUserInfo())
+	onLoad(event) {
+		// 获取交流圈id
+		if (event.id) {
+			this.id = event.id;
+			// 加载交流圈详情用于编辑
+			this.loadCircleDetail();
+		}
+		
 		// 检查用户登录状态
 		this.checkLoginStatus();
 		if (!this.isLoggedIn) {
@@ -178,12 +184,23 @@ export default {
 		
 		// 添加调试信息
 		console.log('onLoad 执行完成，groupTypeList:', this.groupTypeList);
+		console.log('onLoad 执行完成，formData.group_type:', this.formData.group_type);
 		
 		// 强制重新初始化群类型列表
 		setTimeout(() => {
 			this.initGroupTypes();
 			console.log('强制重新初始化后 groupTypeList:', this.groupTypeList);
 		}, 500);
+	},
+	
+	// 选择群类型
+	onGroupTypeChange(e) {
+		console.log('群类型选择:', e.detail.value);
+		const value = e.detail.value;
+		this.formData.group_type = value;
+		// 更新groupTypeIndex
+		const index = value === 'qq' ? 0 : 1;
+		this.groupTypeIndex = index;
 	},
 	
 	onUnload() {
@@ -203,26 +220,9 @@ export default {
 			console.log('群类型列表:', this.groupTypeList);
 		},
 		
-		// 单击群类型单选按钮
-		onGroupTypeClick(index) {
-			this.groupTypeIndex = index;
-			this.formData.group_type = this.groupTypeList[index]._id;
-		},
-		
-		// 选择群类型
-		onGroupTypeChange(e) {
-			const value = e.detail.value;
-			this.formData.group_type = value;
-			console.log('群类型:', this.formData.group_type);
-			// 更新groupTypeIndex
-			const index = value === 'qq' ? 0 : 1;
-			this.groupTypeIndex = index;
-		},
-		
 		// 设置当前用户信息
 		setCurrentUserInfo() {
 			const userInfo = uniCloud.getCurrentUserInfo();
-			console.log('当前登录用户信息',userInfo.uid)
 			this.formData.creator_id = userInfo.uid || userInfo._id || userInfo.userId || '';
 			this.formData.creator_nickname = userInfo.nickname || userInfo.username || userInfo.nickName || '匿名用户';
 			this.formData.creator_avatar = userInfo.avatar || userInfo.headImgUrl || '';
@@ -246,6 +246,69 @@ export default {
 				return false;
 			}
 		},
+		// 加载交流圈详情
+		async loadCircleDetail() {
+			try {
+				const result = await uniCloud.callFunction({
+					name: 'get-circle-detail',
+					data: {
+						id: this.id
+					}
+				});
+				
+				console.log('交流圈详情数据:', result);
+				
+				if(result && result.result && result.result.code === 0) {
+					const data = result.result.data;
+					// 保存当前用户信息
+					const creator_id = this.formData.creator_id;
+					const creator_nickname = this.formData.creator_nickname;
+					const creator_avatar = this.formData.creator_avatar;
+											
+					// 将详情数据填充到表单
+					this.formData = {
+						title: data.group_name,
+						category_id: data.category_id,
+						description: data.group_description,
+						qr_code: data.qr_code,
+						owner_nickname: data.owner_nickname,
+						owner_contact: data.owner_contact,
+						owner_qr_code: data.owner_qr_code,
+						tags: data.tags || [],
+						remark: data.remark,
+						group_type: data.group_type,
+						// 保留用户信息
+						creator_id: creator_id,
+						creator_nickname: creator_nickname,
+						creator_avatar: creator_avatar
+					};
+					
+					// 设置分类索引
+					const categoryIndex = this.categoriesList.findIndex(cat => cat.value === this.formData.category_id);
+					if (categoryIndex !== -1) {
+						this.categoryIndex = categoryIndex;
+					}
+					
+					// 设置群类型索引
+					const groupTypeIndex = this.groupTypeList.findIndex(type => type._id === this.formData.group_type);
+					if (groupTypeIndex !== -1) {
+						this.groupTypeIndex = groupTypeIndex;
+					}
+				} else {
+					console.error('获取交流圈详情失败:', result.result ? result.result.msg : '未知错误');
+					uni.showToast({
+						icon: 'none',
+						title: '获取详情失败'
+					});
+				}
+			} catch (error) {
+				console.error('加载交流圈详情出错:', error);
+				uni.showToast({
+					icon: 'none',
+					title: '加载失败，请重试'
+				});
+			}
+		},
 		// 加载分类列表
 		async loadCategories() {
 			try {
@@ -257,7 +320,7 @@ export default {
 				
 				// 从云函数获取分类数据
 				let fetchedCategories = [];
-										
+									
 				if(result && result.result && result.result.code === 0 && result.result.data && result.result.data.length > 0) {
 					console.log('数据库分类数据:', result.result.data);
 					// 使用从云函数获取的分类数据
@@ -268,6 +331,18 @@ export default {
 				
 				this.categoriesList = fetchedCategories;
 				console.log('最终分类列表:', this.categoriesList);
+				
+				// 设置分类索引
+				const categoryIndex = this.categoriesList.findIndex(cat => cat.value === this.formData.category_id);
+				if (categoryIndex !== -1) {
+					this.categoryIndex = categoryIndex;
+				}
+				
+				// 设置群类型索引
+				const groupTypeIndex = this.groupTypeList.findIndex(type => type._id === this.formData.group_type);
+				if (groupTypeIndex !== -1) {
+					this.groupTypeIndex = groupTypeIndex;
+				}
 			} catch (e) {
 				console.error('加载分类列表失败', e);
 				// 如果加载失败，提供一些默认分类作为后备
@@ -439,7 +514,6 @@ export default {
 				return;
 			}
 			
-			console.log('群类型:', this.formData.group_type);
 			if (!this.formData.group_type) {
 				uni.showToast({
 					icon: 'none',
@@ -452,7 +526,7 @@ export default {
 			if (!this.formData.owner_nickname || !this.formData.owner_nickname.trim()) {
 				this.formData.owner_nickname = '';
 			}
-
+			
 			// 检查登录状态
 			if (!this.checkLoginStatus()) {
 				return;
@@ -464,6 +538,7 @@ export default {
 				// 准备数据
 				// 使用在data中已经获取的用户信息
 				const submitData = {
+					id: this.id,
 					group_name: this.formData.title,
 					group_type: this.formData.group_type, // 使用表单中的群类型值
 					group_description: this.formData.description,
@@ -475,10 +550,9 @@ export default {
 					creator_id: this.formData.creator_id // 只传递创建者ID
 				};
 				
-				console.log('提交数据:', submitData);
 				// 调用云函数提交数据
 				const result = await uniCloud.callFunction({
-					name: 'create-circle',
+					name: 'update-circle',
 					data: submitData
 				});
 				
@@ -486,14 +560,14 @@ export default {
 				
 				if (result && result.result && result.result.code === 0) {
 					uni.showToast({
-						title: '发布成功',
+						title: '修改成功',
 						icon: 'success'
 					});
 					
 					// 延迟跳转，让用户看到成功提示
 					setTimeout(() => {
 						uni.redirectTo({
-							url: `/pages/circle/detail?id=${result.result.id}`
+							url: `/pages/circle/detail?id=${this.id}`
 						});
 					}, 1500);
 				} else {
@@ -515,11 +589,9 @@ export default {
 				url: '/pages/index/index'
 			});
 		},
-		// 跳转到交流圈列表
-		goToCircleList() {
-			uni.redirectTo({
-				url: '/pages/circle/list'
-			});
+		// 返回上一页
+		goBack() {
+			uni.navigateBack();
 		},
 		// 处理登录成功事件
 		handleLoginSuccess() {
@@ -628,7 +700,7 @@ page {
 	background-color: #f5f7fa;
 }
 
-.circle-add {
+.circle-edit {
 	min-height: 100vh;
 	background-color: #f5f7fa;
 	display: flex;
@@ -821,7 +893,6 @@ page {
 }
 
 .input {
-	height: auto;
 	width: 100%;
 	padding: 15rpx;
 	border: 1rpx solid #ddd;
@@ -1055,29 +1126,6 @@ page {
 	
 	.container {
 		width: 90%; /* 移动端稍宽一些 */
-	}
-	
-	.submit-section {
-		flex-direction: column;
-	}
-	
-	.footer-content {
-		width: 90%;
-		flex-direction: column;
-		gap: 10rpx;
-	}
-	
-	.copyright {
-		text-align: center;
-	}
-	
-	.beian-info {
-		flex-direction: column;
-		gap: 8rpx;
-	}
-	
-	.company {
-		text-align: center;
 	}
 }
 

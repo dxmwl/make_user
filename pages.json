@@ -71,6 +71,14 @@
 			}
 		},
 		{
+			"path": "pages/circle/my-circles",
+			"style": {
+				"navigationBarTitleText": "我的交流圈",
+				"enablePullDownRefresh": false,
+				"navigationStyle": "custom"
+			}
+		},
+		{
 			"path": "pages/user-center/user-center",
 			"style": {
 				"navigationBarTitleText": "用户中心",
