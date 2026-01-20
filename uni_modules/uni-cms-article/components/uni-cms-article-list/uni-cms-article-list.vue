@@ -258,7 +258,7 @@ export default {
     },
     goToDetailPage(article: ArticleItem) {
       uni.navigateTo({
-        url: `/uni_modules/uni-cms-article/pages/detail/detail?id=${article._id}&title=${article.title}`
+        url: `/pages/article/detail/detail?id=${article._id}&title=${article.title}`
       })
     },
     onListLoadError () {

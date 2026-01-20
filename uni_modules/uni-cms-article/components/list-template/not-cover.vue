@@ -1,6 +1,6 @@
 <template>
   <uni-list-item
-      :to="'/uni_modules/uni-cms-article/pages/detail/detail?id=' + data._id"
+      :to="'/pages/article/detail/detail?id=' + data._id"
       :key="data._id"
       class="list-item not-cover"
       direction="column"

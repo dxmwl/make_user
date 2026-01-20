@@ -1,35 +1,35 @@
 <template>
-  <unicloud-db v-slot:default="{loading, error, options}" :collection="collection" :options="formData"
-               :getone="true" :where="where" :manual="true" ref="detail" foreignKey="uni-cms-articles.user_id"
-               @load="loadData"
-               class="article">
-    <template v-if="!loading && articleData">
-      <view class="preview-tip">此页面仅用于临时预览文章，链接将会在短期内失效。</view>
-      <view class="meta">
-        <view class="title">
-          <text class="text">{{ articleData.title }}</text>
+  <view class="article">
+    <unicloud-db v-slot:default="{data, loading, error, options}" :collection="collection" :options="formData"
+                 :getone="true" :where="where" :manual="true" ref="detail" foreignKey="uni-cms-articles.user_id"
+                 @load="loadData">
+      <template v-if="!loading && data">
+        <view class="meta">
+          <view class="title">
+            <text class="text">{{ data.title }}</text>
+          </view>
+          <view class="excerpt">
+            <text class="text">{{ data.excerpt }}</text>
+          </view>
+          <view class="author">
+            <template v-if="data.user_id[0]">
+              <text class="at">{{ data.user_id[0].nickname || '' }}</text>
+              <text class="split">·</text>
+            </template>
+            <text class="date">{{ publishTime(data.publish_date) }}</text>
+          </view>
         </view>
-        <view class="excerpt">
-          <text class="text">{{ articleData.excerpt }}</text>
-        </view>
-        <view class="author">
-          <template v-if="articleData.user_id && articleData.user_id[0]">
-            <text class="at">{{ articleData.user_id[0].nickname || '' }}</text>
-            <text class="split">·</text>
-          </template>
-          <text class="date">{{ publishTime(articleData.publish_date) }}</text>
-        </view>
+        <render-article-detail
+          :content="data.content"
+          :content-images="data.content_images"
+          :ad-config="{ adpId, watchAdUniqueType }"
+        ></render-article-detail>
+      </template>
+      <view class="detail-loading" v-else>
+        <uni-icons type="spinner-cycle" size="35px"/>
       </view>
-      <render-article-detail
-        :content="articleData.content"
-        :content-images="articleData.content_images"
-        :ad-config="{ adpId, watchAdUniqueType }"
-      ></render-article-detail>
-    </template>
-    <view class="detail-loading" v-else>
-      <uni-icons type="spinner-cycle" size="35px"/>
-    </view>
-  </unicloud-db>
+    </unicloud-db>
+  </view>
 </template>
 
 <script>
@@ -50,9 +50,7 @@ export default {
     return {
       id: "", // 文章ID
       title: "", // 文章标题
-      secret: "", // 文章预览密钥
       formData: {}, // 表单数据
-      articleData: null, // 文章数据
 
       // 广告相关配置
       adpId: "", // TODO: 请填写广告位ID
@@ -62,11 +60,11 @@ export default {
   computed: {
     where() {
       //拼接where条件 查询条件 ,更多详见 ：https://uniapp.dcloud.net.cn/uniCloud/unicloud-db?id=jsquery
-      return `_id =="${this.id}" && preview_secret =="${this.secret}"`
+      return `_id =="${this.id}"`
     },
     collection() {
       return [
-        db.collection(articleDBName).where(this.where).field('user_id,thumbnail,excerpt,publish_date,title,content,preview_secret,preview_expired,article_status').getTemp(),
+        db.collection(articleDBName).where(this.where).field('user_id,thumbnail,excerpt,publish_date,title,content').getTemp(),
         db.collection(userDBName).field('_id, nickname').getTemp()
       ]
     }
@@ -86,7 +84,6 @@ export default {
     //获取文章id，通常 id 来自上一个页面
     if (event.id) {
       this.id = event.id
-      this.secret = event.secret
     }
 
     // 监听解锁内容事件
@@ -113,55 +110,28 @@ export default {
     publishTime(timestamp) {
       return translatePublishTime(timestamp)
     },
+    // 将文章加入阅读历史
+    setReadHistory() {
+      // 获取阅读历史缓存，如果不存在则为空数组
+      const historyCache = uni.getStorageSync('readHistory') || []
+      // 过滤掉当前文章的阅读历史
+      const readHistory = historyCache.filter(item => item.article_id !== this.id)
+      // 将当前文章的阅读历史添加到数组最前面
+      readHistory.unshift({
+        article_id: this.id,
+        last_time: Date.now()
+      })
+      // 将更新后的阅读历史缓存到本地
+      uni.setStorageSync('readHistory', readHistory)
+
+    },
     // 加载数据
     loadData(data) {
-      if (!data) {
-        return uni.showModal({
-          content: "文章不存在/预览密钥不存在",
-          showCancel: false,
-          success: () => {
-            // #ifdef H5
-            window.close()
-            // #endif
-
-            // #ifndef H5
-            uni.navigateBack()
-            // #endif
-          }
-        })
-      }
-      // 文章已发布，跳转到文章详情页
-      if (data.article_status === 1) {
-        uni.showToast({
-          icon: 'none',
-          title: '文章已发布'
-        })
-        uni.redirectTo({
-          url: `/pages/article/detail/detail?id=${this.id}`
-        })
-        return
-      }
-
-      // 预览已过期，提示用户
-      if (data.preview_expired < Date.now()) {
-        return uni.showModal({
-          content: "预览已失效",
-          showCancel: false,
-          success: () => {
-            // #ifdef H5
-              window.close()
-            // #endif
-
-            // #ifndef H5
-              uni.navigateBack()
-            // #endif
-          }
-        })
-      }
-
       // 设置文章标题
       this.title = data.title
-      this.articleData = data
+
+      // 将文章添加进阅读历史
+      this.setReadHistory()
     },
     // 监听解锁内容事件，解锁内容后重新加载数据
     async onUnlockContent() {
@@ -182,6 +152,33 @@ export default {
 
 @mixin cp {
   padding: 0 30rpx;
+  
+  /* 桌面端样式调整 */
+  @media screen and (min-width: 768px) {
+    padding: 0 50rpx;
+  }
+}
+
+/* 桌面端样式调整 */
+@media screen and (min-width: 768px) {
+  .article {
+    max-width: 60vw; /* 使用视口宽度的60% */
+    margin: 0 auto;
+    padding: 0 30px; /* 确保桌面端边距 */
+  }
+  
+  .meta {
+    padding: 0 50rpx !important; /* 与内容区域保持一致 */
+  }
+}
+
+/* 移动端样式保持原有特性 */
+@media screen and (max-width: 767px) {
+  .article {
+    width: 100%;
+    margin: 0;
+    padding: 0 15px; /* 移动端边距 */
+  }
 }
 
 .detail-loading {
@@ -208,12 +205,29 @@ export default {
   position: relative;
   z-index: 1;
   padding-top: 20rpx;
+  
+  /* 桌面端样式调整 */
+  @media screen and (min-width: 768px) {
+    padding: 0 50rpx !important; /* 与内容区域保持一致 */
+  }
+  
+  /* 移动端样式调整 */
+  @media screen and (max-width: 767px) {
+    padding: 0 15px !important; /* 移动端边距 */
+  }
+  
   .title {
     .text {
       font-size: 40rpx;
       line-height: 66rpx;
       font-weight: bold;
       color: #333;
+      
+      /* 桌面端标题样式 */
+      @media screen and (min-width: 768px) {
+        font-size: 48rpx;
+        line-height: 74rpx;
+      }
     }
   }
 
@@ -223,6 +237,12 @@ export default {
       font-size: 26rpx;
       line-height: 40rpx;
       color: #999;
+      
+      /* 桌面端摘要样式 */
+      @media screen and (min-width: 768px) {
+        font-size: 28rpx;
+        line-height: 44rpx;
+      }
     }
   }
 
@@ -232,6 +252,11 @@ export default {
     justify-content: flex-start;
     flex-direction: row;
     margin-top: 20rpx;
+    
+    /* 桌面端作者信息样式 */
+    @media screen and (min-width: 768px) {
+      font-size: 28rpx;
+    }
 
     .at,
     .split,
@@ -244,12 +269,5 @@ export default {
       margin: 0 10rpx;
     }
   }
-}
-
-.preview-tip {
-  font-size: 13px;
-  color: #333;
-  background: #fcd791;
-  padding: 10px;
 }
 </style>

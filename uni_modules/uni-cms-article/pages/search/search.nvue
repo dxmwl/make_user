@@ -77,7 +77,7 @@
 				</template>
 				<uni-list v-else class="uni-list" :border="false" :style="{ height: listHeight }">
 					<!-- 列表渲染 -->
-					<uni-list-item :to="'/uni_modules/uni-cms-article/pages/detail/detail?id=' + item._id"
+					<uni-list-item :to="'/pages/article/detail/detail?id=' + item._id"
 						v-for="(item, index) in searchList" :key="index">
 						<!-- 通过header插槽定义列表左侧图片 -->
 						<template v-slot:header>

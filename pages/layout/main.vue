@@ -482,7 +482,7 @@ export default {
 		readMore(postId) {
 			// 跳转到文章详情页
 			uni.navigateTo({
-				url: `/uni_modules/uni-cms-article/pages/detail/detail?id=${postId}`
+				url: `/pages/article/detail/detail?id=${postId}`
 			});
 		},
 		filterByCategory(categoryId) {
@@ -587,13 +587,13 @@ export default {
 		// 跳转到文章详情
 		goToArticleDetail(id) {
 			uni.navigateTo({
-				url: `/uni_modules/uni-cms-article/pages/detail/detail?id=${id}`
+				url: `/pages/article/detail/detail?id=${id}`
 			});
 		},
 		// 跳转到文章详情页
 		readMore(postId) {
 			uni.navigateTo({
-				url: `/uni_modules/uni-cms-article/pages/detail/detail?id=${postId}`
+				url: `/pages/article/detail/detail?id=${postId}`
 			});
 		},
 		// 跳转到用户个人资料页

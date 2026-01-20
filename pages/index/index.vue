@@ -497,7 +497,7 @@
 			// 跳转到文章详情
 			goToArticleDetail(id) {
 				uni.navigateTo({
-					url: `/uni_modules/uni-cms-article/pages/detail/detail?id=${id}`
+					url: `/pages/article/detail/detail?id=${id}`
 				});
 			},
 			
@@ -508,7 +508,7 @@
 			readMore(postId) {
 				// 跳转到文章详情页
 				uni.navigateTo({
-					url: `/uni_modules/uni-cms-article/pages/detail/detail?id=${postId}`
+					url: `/pages/article/detail/detail?id=${postId}`
 				});
 			},
 								

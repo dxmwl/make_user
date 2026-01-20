@@ -7,6 +7,13 @@
 			}
 		},
 		{
+			"path": "pages/article/detail/detail",
+			"style": {
+				"backgroundColor": "#FFFFFF",
+				"navigationStyle": "custom"
+			}
+		},
+		{
 			"path": "uni_modules/uni-cms-article/pages/list/list",
 			"style": {
 				"backgroundColor": "#FFFFFF",
